@@ -72,3 +72,63 @@ describe('GET /api/collections', () => {
     expect(owners.map(String)).toEqual([String(getStandInUserId())]);
   });
 });
+
+describe('collection covers and detail', () => {
+  async function saveItem(collectionId: string, sourceId: string) {
+    const res = await request(app)
+      .post(`/api/collections/${collectionId}/items`)
+      .send({ sourceId });
+    expect(res.status).toBe(201);
+    return res.body.item as { id: string; imageUrl: string };
+  }
+
+  it('uses the newest item as the cover, with its credit, and counts items', async () => {
+    const { id } = await createCollection('Coast trip');
+    const empty = await createCollection('Empty');
+    await saveItem(id, '101');
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    const newest = await saveItem(id, '102');
+
+    const res = await request(app).get('/api/collections');
+    const byId = Object.fromEntries(res.body.collections.map((c: { id: string }) => [c.id, c]));
+
+    expect(byId[id]).toMatchObject({
+      itemCount: 2,
+      coverImageUrl: newest.imageUrl,
+      coverCreatorName: 'L. Marchetti',
+      coverPageUrl: 'https://pixabay.com/photos/example-102/',
+    });
+    expect(byId[empty.id]).toMatchObject({
+      itemCount: 0,
+      coverImageUrl: null,
+      coverCreatorName: null,
+      coverPageUrl: null,
+    });
+  });
+
+  it('returns a collection with its items newest first', async () => {
+    const { id } = await createCollection('Coast trip');
+    await saveItem(id, '101');
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    await saveItem(id, '102');
+
+    const res = await request(app).get(`/api/collections/${id}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.collection).toMatchObject({ id, name: 'Coast trip', itemCount: 2 });
+    expect(res.body.collection.items.map((item: { sourceId: string }) => item.sourceId)).toEqual([
+      '102',
+      '101',
+    ]);
+  });
+
+  it('returns 404 for an unknown collection and 400 for a malformed id', async () => {
+    const missing = await request(app).get('/api/collections/66e8a1f2c3b4d5e6f7a8b9c0');
+    expect(missing.status).toBe(404);
+    expect(missing.body.error.code).toBe('COLLECTION_NOT_FOUND');
+
+    const malformed = await request(app).get('/api/collections/nope');
+    expect(malformed.status).toBe(400);
+    expect(malformed.body.error.code).toBe('VALIDATION_ERROR');
+  });
+});

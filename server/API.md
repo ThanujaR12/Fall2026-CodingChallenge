@@ -202,6 +202,19 @@ curl -X POST http://localhost:4000/api/collections \
   -d '{"name":"Coast trip","description":"Lighthouses and fog"}'
 ```
 
+### `GET /collections/:id`
+
+Returns one collection with all of its saved items, newest first.
+
+- **Auth**: none (stand-in user)
+- **Params**: `id` — collection id
+- **Response 200**: `{ "collection": CollectionDetail }` — a `CollectionSummary` plus `items: [SavedItem]`
+- **Errors**: `400 VALIDATION_ERROR` (malformed id), `404 COLLECTION_NOT_FOUND`
+
+```bash
+curl http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0
+```
+
 ## Items
 
 ### `POST /collections/:id/items`

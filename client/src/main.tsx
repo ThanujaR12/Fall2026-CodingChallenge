@@ -3,13 +3,20 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ApiError } from '@/api/client';
 import { Toaster } from '@/components/ui/sonner';
 import App from './App';
 import './index.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { retry: 1, refetchOnWindowFocus: false },
+    queries: {
+      // Retry once for network or server hiccups, never for "not found" or invalid requests.
+      retry: (failureCount, error) =>
+        failureCount < 1 &&
+        !(error instanceof ApiError && error.status >= 400 && error.status < 500),
+      refetchOnWindowFocus: false,
+    },
   },
 });
 

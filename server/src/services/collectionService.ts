@@ -118,3 +118,23 @@ export async function getOwnedCollection(ownerId: Types.ObjectId, collectionId: 
 export async function touchCollection(collectionId: Types.ObjectId): Promise<void> {
   await Collection.updateOne({ _id: collectionId }, { $set: { updatedAt: new Date() } });
 }
+
+export async function getCollectionDetail(ownerId: Types.ObjectId, collectionId: string) {
+  const collection = await getOwnedCollection(ownerId, collectionId);
+  const items = await SavedItem.find({ collectionId: collection._id }).sort({
+    createdAt: -1,
+    _id: -1,
+  });
+
+  const newest = items[0];
+  const stats: CollectionStats = newest
+    ? {
+        itemCount: items.length,
+        coverAsset: newest.asset,
+        coverCreatorName: newest.creatorName,
+        coverPageUrl: newest.pageUrl,
+      }
+    : { ...emptyStats };
+
+  return { collection, stats, items };
+}

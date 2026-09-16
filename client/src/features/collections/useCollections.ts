@@ -1,6 +1,6 @@
-// Data hooks for collections: list, create (and later detail, update, delete).
+// Data hooks for collections: list, detail, create, update, and delete.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createCollection, listCollections } from '@/api/collections';
+import { createCollection, getCollection, listCollections } from '@/api/collections';
 import { queryKeys } from '@/lib/queryKeys';
 import type { CollectionSummary } from '@/types/api';
 
@@ -24,5 +24,12 @@ export function useCreateCollection() {
       );
       void queryClient.invalidateQueries({ queryKey: ['collections'] });
     },
+  });
+}
+
+export function useCollection(id: string) {
+  return useQuery({
+    queryKey: queryKeys.collection(id),
+    queryFn: () => getCollection(id),
   });
 }
