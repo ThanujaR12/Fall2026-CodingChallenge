@@ -100,3 +100,46 @@ Confirms the server is running.
 ```bash
 curl http://localhost:4000/api/health
 ```
+
+## Search
+
+### `GET /search/images?q=&page=`
+
+Searches Pixabay photos (safe search on, 20 per page). Identical searches are cached for 24 hours,
+as Pixabay requires.
+
+- **Auth**: none
+- **Query**:
+  - `q` (required): keyword, 1–100 characters after trimming
+  - `page` (optional): integer ≥ 1, default `1`; `page × 20` must be ≤ 500 (Pixabay's limit)
+- **Response 200**:
+
+  ```json
+  {
+    "results": [
+      {
+        "sourceId": "736877",
+        "title": "Lighthouse, coast",
+        "tags": ["lighthouse", "coast", "sea"],
+        "creatorName": "jplenio",
+        "pageUrl": "https://pixabay.com/photos/lighthouse-736877/",
+        "thumbnailUrl": "https://pixabay.com/get/...jpg",
+        "width": 640,
+        "height": 427
+      }
+    ],
+    "page": 1,
+    "perPage": 20,
+    "total": 500,
+    "hasMore": true
+  }
+  ```
+
+  `total` is at most 500. No matches → `results: []`, `total: 0`, `hasMore: false`.
+
+- **Errors**: `400 VALIDATION_ERROR` (empty or too-long `q`, bad `page`),
+  `502 IMAGE_SOURCE_UNAVAILABLE`
+
+```bash
+curl "http://localhost:4000/api/search/images?q=lighthouse&page=1"
+```
