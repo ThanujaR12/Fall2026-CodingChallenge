@@ -341,3 +341,11 @@ Returns the stored bytes of a saved image. `imageUrl` and `coverImageUrl` fields
 ```bash
 curl -o photo.jpg http://localhost:4000/api/images/66e8a3b0c2d4e5f6a7b8c9cf
 ```
+
+## Known limitations (Feature 1)
+
+- There are no accounts yet: every request acts as one built-in stand-in user. Feature 2 adds
+  sign-in and hands the stand-in user's collections to the first account that registers.
+- `GET /images/:id` is not scoped to an owner. With a single user this is harmless (and asset ids
+  are unguessable ObjectIds); revisit it when Feature 2 adds private collections.
+- The Pixabay response cache lives in server memory, so it resets when the server restarts.
