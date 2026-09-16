@@ -298,8 +298,8 @@ opens in new tab; closing returns to the same grid position; Back closes the pan
 
 ### Implementation for User Story 7
 
-- [ ] T106 [US7] Complete `client/src/features/items/ItemDetailPanel.tsx`: add tag chips (all tags, `tag-neutral`), `ImageCredit`, a secondary link-button **View on Pixabay** (`ArrowSquareOut`, `target="_blank" rel="noopener noreferrer"`), saved date meta ("Saved {date}"); image uses the item's `width`/`height` aspect ratio; `Escape` closes; focus moves to the panel heading on open and back to the originating card on close
-- [ ] T107 [US7] In `client/src/pages/CollectionPage.tsx`, keep grid scroll position when opening/closing the detail (desktop column must not reflow the grid width; phone uses the Sheet overlay) and highlight the selected card with a 2px accent outline
+- [X] T106 [US7] Complete `client/src/features/items/ItemDetailPanel.tsx`: add tag chips (all tags, `tag-neutral`), `ImageCredit`, a secondary link-button **View on Pixabay** (`ArrowSquareOut`, `target="_blank" rel="noopener noreferrer"`), saved date meta ("Saved {date}"); image uses the item's `width`/`height` aspect ratio; `Escape` closes; focus moves to the panel heading on open and back to the originating card on close
+- [X] T107 [US7] In `client/src/pages/CollectionPage.tsx`, keep grid scroll position when opening/closing the detail (desktop column must not reflow the grid width; phone uses the Sheet overlay) and highlight the selected card with a 2px accent outline
 
 **Checkpoint**: quickstart S6 passes; lint + format:check pass (client). Commit `feat: item detail view`.
 
