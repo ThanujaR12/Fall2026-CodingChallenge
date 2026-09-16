@@ -1,0 +1,102 @@
+# PixBoard API
+
+REST API for PixBoard (displayed as "Palette Boards"): search Pixabay images, organize them into
+collections, and edit or remove saved items.
+
+- **Base URL**: `http://localhost:4000/api`
+- **Format**: JSON request and response bodies, except `GET /images/:id` (image bytes).
+- **Auth (Feature 1)**: none — every request acts as the built-in stand-in user. Feature 2 adds
+  `Authorization: Bearer <token>` without changing these shapes.
+
+## Errors
+
+Every error response has this shape:
+
+```json
+{ "error": { "code": "COLLECTION_NOT_FOUND", "message": "That collection doesn't exist." } }
+```
+
+`VALIDATION_ERROR` responses also include `fields`, mapping each invalid field to its message:
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Some fields are invalid.",
+    "fields": { "name": "Names can be at most 60 characters." }
+  }
+}
+```
+
+| Status | Code                       | When                                                                |
+| ------ | -------------------------- | ------------------------------------------------------------------- |
+| 400    | `VALIDATION_ERROR`         | Body, query, or params fail validation (or the JSON is malformed)   |
+| 404    | `COLLECTION_NOT_FOUND`     | Collection missing or not owned by the current user                 |
+| 404    | `ITEM_NOT_FOUND`           | Item missing or not in that collection                              |
+| 404    | `IMAGE_NOT_FOUND`          | Stored image missing, or the Pixabay image no longer exists         |
+| 404    | `ROUTE_NOT_FOUND`          | Unknown path                                                        |
+| 409    | `COLLECTION_NAME_TAKEN`    | Name matches another of your collections (ignoring case and spaces) |
+| 409    | `ITEM_ALREADY_SAVED`       | The image is already in that collection                             |
+| 502    | `IMAGE_SOURCE_UNAVAILABLE` | Pixabay failed, timed out (8 s), or rate-limited the request        |
+| 500    | `INTERNAL_ERROR`           | Anything unexpected (details are only in the server log)            |
+
+## Shared types
+
+```ts
+type SearchResult = {
+  sourceId: string; // Pixabay image id
+  title: string; // derived from the first tags
+  tags: string[];
+  creatorName: string;
+  pageUrl: string; // Pixabay page, used for the credit link
+  thumbnailUrl: string; // temporary Pixabay URL, for displaying search results only
+  width: number;
+  height: number;
+};
+
+type CollectionSummary = {
+  id: string;
+  name: string;
+  description: string;
+  itemCount: number;
+  coverImageUrl: string | null; // "/api/images/<assetId>" of the newest item
+  coverCreatorName: string | null;
+  coverPageUrl: string | null;
+  createdAt: string; // ISO 8601
+  updatedAt: string;
+  containsImage?: boolean; // only when ?sourceId= is given
+};
+
+type SavedItem = {
+  id: string;
+  collectionId: string;
+  sourceId: string;
+  title: string;
+  note: string;
+  tags: string[];
+  creatorName: string;
+  pageUrl: string;
+  imageUrl: string; // "/api/images/<assetId>"
+  width: number;
+  height: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type CollectionDetail = CollectionSummary & { items: SavedItem[] }; // items newest first
+```
+
+---
+
+## Health
+
+### `GET /health`
+
+Confirms the server is running.
+
+- **Auth**: none
+- **Response 200**: `{ "status": "ok" }`
+
+```bash
+curl http://localhost:4000/api/health
+```

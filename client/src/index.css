@@ -1,0 +1,180 @@
+/* Broadsheet design tokens and base styles, defined once and reused via Tailwind utilities. */
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  /* Ground, surface, ink */
+  --color-paper: #f3f2f2;
+  --color-surface: #eae9e9;
+  --color-ink: #201e1d;
+  --color-divider: rgba(32, 30, 29, 0.16);
+
+  /* The one interactive ink (cyan) */
+  --color-accent: #0088b0;
+  --color-accent-pressed: #1186ac;
+  --color-accent-deep: #006786;
+  --color-accent-tint: #e9f8ff;
+
+  /* Rare second spot (magenta): destructive text, error fills */
+  --color-accent2: #d6006c;
+  --color-accent2-tint: #fff1f4;
+  --color-accent2-deep: #aa0b56;
+
+  /* Neutral ramp: skeletons, placeholders, avatar fallbacks */
+  --color-neutral-50: #f8f4f4;
+  --color-neutral-100: #eae7e7;
+  --color-neutral-200: #d7d3d3;
+  --color-neutral-300: #bab6b6;
+  --color-neutral-400: #9b9797;
+  --color-neutral-500: #7d7979;
+  --color-neutral-600: #605d5d;
+  --color-neutral-700: #444141;
+  --color-neutral-800: #2d2b2b;
+
+  --font-serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-sans: var(--font-serif);
+
+  /* Effectively square corners: the flat corner is the system. */
+  --radius-sm: 1px;
+  --radius: 2px;
+  --radius-md: 2px;
+  --radius-lg: 4px;
+
+  --shadow-float: 0 12px 32px rgba(45, 43, 43, 0.22);
+}
+
+/* shadcn/ui semantic variables mapped onto Broadsheet tokens. */
+:root {
+  --background: var(--color-paper);
+  --foreground: var(--color-ink);
+  --card: var(--color-surface);
+  --card-foreground: var(--color-ink);
+  --popover: var(--color-paper);
+  --popover-foreground: var(--color-ink);
+  --primary: var(--color-accent);
+  --primary-foreground: #ffffff;
+  --secondary: var(--color-surface);
+  --secondary-foreground: var(--color-ink);
+  --muted: var(--color-surface);
+  --muted-foreground: rgba(32, 30, 29, 0.6);
+  --accent: var(--color-accent-tint);
+  --accent-foreground: var(--color-ink);
+  --destructive: var(--color-accent2-deep);
+  --border: var(--color-divider);
+  --input: var(--color-divider);
+  --ring: var(--color-accent);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-divider);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-serif);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.12;
+  }
+
+  ::selection {
+    background: var(--color-accent-tint);
+  }
+
+  /* Focus is always the cyan ring, never the browser default. */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  input,
+  textarea {
+    caret-color: var(--color-accent);
+  }
+}
+
+@layer components {
+  /* Section labels and kickers. */
+  .label-caps {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(32, 30, 29, 0.55);
+  }
+
+  /* Newsprint dot-screen treatment for photographs. */
+  .newsprint {
+    filter: grayscale(0.35) contrast(1.15);
+  }
+
+  /* Diagonal stripe placeholder for images that are missing or still loading. */
+  .stripe-placeholder {
+    background-color: var(--color-neutral-100);
+    background-image: repeating-linear-gradient(
+      135deg,
+      rgba(32, 30, 29, 0.1) 0 6px,
+      transparent 6px 13px
+    );
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    line-height: 1.3;
+    padding: 3px 10px;
+    border-radius: 1.5px;
+    white-space: nowrap;
+  }
+
+  .tag-neutral {
+    background-color: var(--color-paper);
+    color: rgba(32, 30, 29, 0.75);
+  }
+
+  /* Muted copy is the ink at reduced opacity, not a gray token. */
+  .text-supporting {
+    color: rgba(32, 30, 29, 0.75);
+  }
+
+  .text-meta {
+    color: rgba(32, 30, 29, 0.65);
+  }
+}
