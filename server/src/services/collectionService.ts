@@ -80,14 +80,38 @@ async function statsFor(collectionIds: Types.ObjectId[]): Promise<Map<string, Co
   );
 }
 
-export async function listForOwner(ownerId: Types.ObjectId) {
+// With a sourceId, each collection also says whether it already holds that image.
+export async function listForOwner(ownerId: Types.ObjectId, sourceId?: string) {
   const collections = await Collection.find({ owner: ownerId }).sort({ updatedAt: -1, _id: -1 });
-  const stats = await statsFor(collections.map((c) => c._id));
+  const ids = collections.map((c) => c._id);
+  const stats = await statsFor(ids);
 
-  return collections.map((collection) => ({
-    collection,
-    stats: stats.get(String(collection._id)) ?? { ...emptyStats },
-  }));
+  const holding = sourceId
+    ? new Set(
+        (
+          await SavedItem.distinct('collectionId', {
+            collectionId: { $in: ids },
+            source: 'pixabay',
+            sourceId,
+          })
+        ).map(String),
+      )
+    : null;
+
+  return collections.map((collection) => {
+    const row = { ...(stats.get(String(collection._id)) ?? emptyStats) };
+    if (holding) row.containsImage = holding.has(String(collection._id));
+    return { collection, stats: row };
+  });
+}
+
+// Finds a collection only if it belongs to the owner; anything else looks like "not found".
+export async function getOwnedCollection(ownerId: Types.ObjectId, collectionId: string) {
+  const collection = await Collection.findOne({ _id: collectionId, owner: ownerId });
+  if (!collection) {
+    throw new AppError(404, 'COLLECTION_NOT_FOUND', "That collection doesn't exist.");
+  }
+  return collection;
 }
 
 // Marks a collection as just changed so it moves to the top of the list.

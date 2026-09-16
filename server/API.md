@@ -152,7 +152,10 @@ Lists the current user's collections, most recently updated first. Creating, ren
 a collection, or saving, editing, or removing one of its items, counts as an update.
 
 - **Auth**: none (stand-in user)
-- **Query**: none
+- **Query**:
+  - `sourceId` (optional): a Pixabay image id (digits). When given, each summary also includes
+    `containsImage: true | false`, used by the save picker to mark collections that already hold
+    that image.
 - **Response 200**: `{ "collections": [CollectionSummary] }`
 
   ```json
@@ -177,6 +180,7 @@ a collection, or saving, editing, or removing one of its items, counts as an upd
 
 ```bash
 curl http://localhost:4000/api/collections
+curl "http://localhost:4000/api/collections?sourceId=736877"
 ```
 
 ### `POST /collections`
@@ -196,4 +200,61 @@ Creates a collection.
 curl -X POST http://localhost:4000/api/collections \
   -H "Content-Type: application/json" \
   -d '{"name":"Coast trip","description":"Lighthouses and fog"}'
+```
+
+## Items
+
+### `POST /collections/:id/items`
+
+Saves a Pixabay image into a collection. The server looks the image up by id itself (it never
+trusts image data or URLs from the browser) and stores its own copy of the image, because Pixabay
+does not allow permanent hotlinking.
+
+- **Auth**: none (stand-in user)
+- **Params**: `id` — collection id
+- **Body**: `{ "sourceId": "736877" }` — the Pixabay image id (digits only)
+- **Response 201**: `{ "item": SavedItem }` — `title` defaults to the first two tags, `note` is `""`
+
+  ```json
+  {
+    "item": {
+      "id": "66e8a3b1c2d4e5f6a7b8c9d0",
+      "collectionId": "66e8a1f2c3b4d5e6f7a8b9c0",
+      "sourceId": "736877",
+      "title": "Lighthouse, coast",
+      "note": "",
+      "tags": ["lighthouse", "coast", "sea"],
+      "creatorName": "jplenio",
+      "pageUrl": "https://pixabay.com/photos/lighthouse-736877/",
+      "imageUrl": "/api/images/66e8a3b0c2d4e5f6a7b8c9cf",
+      "width": 640,
+      "height": 427,
+      "createdAt": "2026-09-16T18:10:45.000Z",
+      "updatedAt": "2026-09-16T18:10:45.000Z"
+    }
+  }
+  ```
+
+- **Errors**: `400 VALIDATION_ERROR` (bad id or `sourceId`), `404 COLLECTION_NOT_FOUND`,
+  `404 IMAGE_NOT_FOUND` (Pixabay no longer has it), `409 ITEM_ALREADY_SAVED`,
+  `502 IMAGE_SOURCE_UNAVAILABLE`
+
+```bash
+curl -X POST http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0/items   -H "Content-Type: application/json"   -d '{"sourceId":"736877"}'
+```
+
+## Images
+
+### `GET /images/:id`
+
+Returns the stored bytes of a saved image. `imageUrl` and `coverImageUrl` fields point here.
+
+- **Auth**: none
+- **Params**: `id` — image asset id
+- **Response 200**: image bytes with `Content-Type` (e.g. `image/jpeg`) and
+  `Cache-Control: public, max-age=31536000, immutable`
+- **Errors**: `400 VALIDATION_ERROR` (malformed id), `404 IMAGE_NOT_FOUND`
+
+```bash
+curl -o photo.jpg http://localhost:4000/api/images/66e8a3b0c2d4e5f6a7b8c9cf
 ```

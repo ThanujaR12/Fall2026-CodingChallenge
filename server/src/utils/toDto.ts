@@ -44,3 +44,37 @@ export function toCollectionSummary(collection: CollectionLike, stats: Collectio
   if (stats.containsImage !== undefined) summary.containsImage = stats.containsImage;
   return summary;
 }
+
+type SavedItemLike = {
+  _id: Types.ObjectId;
+  collectionId: Types.ObjectId;
+  sourceId: string;
+  asset: Types.ObjectId;
+  title: string;
+  note?: string | null;
+  tags: string[];
+  creatorName?: string | null;
+  pageUrl?: string | null;
+  width?: number | null;
+  height?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export function toSavedItem(item: SavedItemLike) {
+  return {
+    id: String(item._id),
+    collectionId: String(item.collectionId),
+    sourceId: item.sourceId,
+    title: item.title,
+    note: item.note ?? '',
+    tags: [...item.tags],
+    creatorName: item.creatorName ?? '',
+    pageUrl: item.pageUrl ?? '',
+    imageUrl: imageUrl(item.asset),
+    width: item.width ?? 0,
+    height: item.height ?? 0,
+    createdAt: item.createdAt.toISOString(),
+    updatedAt: item.updatedAt.toISOString(),
+  };
+}

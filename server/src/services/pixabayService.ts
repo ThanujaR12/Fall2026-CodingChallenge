@@ -1,5 +1,6 @@
 // Talks to the Pixabay API (server-side only, so the key stays secret) and caches responses 24 hours.
 import { env } from '../config/env.js';
+import { MAX_IMAGE_BYTES } from '../config/limits.js';
 import { AppError } from '../utils/AppError.js';
 import { TtlCache } from '../utils/ttlCache.js';
 
@@ -85,4 +86,31 @@ export async function getImageById(id: string): Promise<PixabayHit | null> {
   if (!hit) return null;
   hitCache.set(id, hit);
   return hit;
+}
+
+// Only Pixabay's own https hosts may be downloaded from, so the server never fetches arbitrary URLs.
+function isPixabayUrl(url: string): boolean {
+  try {
+    const { protocol, hostname } = new URL(url);
+    return (
+      protocol === 'https:' && (hostname === 'pixabay.com' || hostname.endsWith('.pixabay.com'))
+    );
+  } catch {
+    return false;
+  }
+}
+
+export async function downloadImage(url: string): Promise<{ data: Buffer; contentType: string }> {
+  if (!isPixabayUrl(url)) throw unavailable();
+
+  const res = await fetchWithTimeout(url);
+  const contentType = res.headers.get('content-type') ?? '';
+  const declaredLength = Number(res.headers.get('content-length') ?? 0);
+  if (!res.ok || !contentType.startsWith('image/') || declaredLength > MAX_IMAGE_BYTES) {
+    throw unavailable();
+  }
+
+  const data = Buffer.from(await res.arrayBuffer());
+  if (data.byteLength > MAX_IMAGE_BYTES) throw unavailable();
+  return { data, contentType };
 }

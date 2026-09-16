@@ -1,7 +1,6 @@
 // ImageAsset schema: our stored copy of a saved image, since Pixabay forbids permanent hotlinking.
 import { Schema, model, type InferSchemaType } from 'mongoose';
-
-export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+import { MAX_IMAGE_BYTES } from '../config/limits.js';
 
 const imageAssetSchema = new Schema(
   {

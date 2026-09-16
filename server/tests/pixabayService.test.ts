@@ -65,6 +65,55 @@ describe('searchImages', () => {
   });
 });
 
+describe('downloadImage', () => {
+  function imageResponse(contentType: string, bytes = 12, length?: number): Response {
+    const headers: Record<string, string> = { 'Content-Type': contentType };
+    if (length !== undefined) headers['Content-Length'] = String(length);
+    return new Response(new Uint8Array(bytes), { status: 200, headers });
+  }
+
+  it('downloads an image from a Pixabay host', async () => {
+    fetchMock.mockResolvedValueOnce(imageResponse('image/jpeg'));
+
+    const result = await service.downloadImage('https://cdn.pixabay.com/photo/a.jpg');
+
+    expect(result.contentType).toBe('image/jpeg');
+    expect(result.data.byteLength).toBe(12);
+  });
+
+  it.each([
+    ['plain http', 'http://cdn.pixabay.com/photo/a.jpg'],
+    ['another host', 'https://evil.example.com/x.jpg'],
+    ['a lookalike host', 'https://pixabay.com.evil.example/x.jpg'],
+    ['not a URL', 'nonsense'],
+  ])('refuses %s without making a request', async (_label, url) => {
+    await expect(service.downloadImage(url)).rejects.toMatchObject({
+      status: 502,
+      code: 'IMAGE_SOURCE_UNAVAILABLE',
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('rejects responses that are not images', async () => {
+    fetchMock.mockResolvedValueOnce(imageResponse('text/html'));
+    await expect(service.downloadImage('https://pixabay.com/get/a.jpg')).rejects.toMatchObject({
+      status: 502,
+    });
+  });
+
+  it('rejects images over 5 MB by header or by actual size', async () => {
+    fetchMock.mockResolvedValueOnce(imageResponse('image/jpeg', 12, 6 * 1024 * 1024));
+    await expect(service.downloadImage('https://pixabay.com/get/a.jpg')).rejects.toMatchObject({
+      status: 502,
+    });
+
+    fetchMock.mockResolvedValueOnce(imageResponse('image/jpeg', 5 * 1024 * 1024 + 1));
+    await expect(service.downloadImage('https://pixabay.com/get/b.jpg')).rejects.toMatchObject({
+      status: 502,
+    });
+  });
+});
+
 describe('getImageById', () => {
   it('reuses hits seen in a search without another request', async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse({ total: 3, totalHits: 3, hits }));

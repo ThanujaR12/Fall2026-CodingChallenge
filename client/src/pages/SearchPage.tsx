@@ -1,27 +1,16 @@
-// Search screen: headline, keyword field (kept in the ?q= URL), and results.
-import { useEffect, type ReactNode } from 'react';
+// Search screen: headline, keyword field (kept in the ?q= URL), and results with Save actions.
+import { useEffect } from 'react';
 import { useSearchParams } from 'react-router';
-import { BookmarkSimple } from '@phosphor-icons/react';
 import { PageContainer } from '@/components/PageContainer';
-import { Button } from '@/components/ui/button';
+import { SaveToCollectionPopover } from '@/features/search/SaveToCollectionPopover';
 import { SearchBar } from '@/features/search/SearchBar';
 import { SearchResults } from '@/features/search/SearchResults';
 import { APP_NAME } from '@/lib/constants';
 import type { SearchResult } from '@/types/api';
 
-type SearchPageProps = {
-  /** Lets the save flow plug in without the page knowing its details. */
-  renderSaveAction?: (result: SearchResult) => ReactNode;
-};
+const renderSaveAction = (result: SearchResult) => <SaveToCollectionPopover result={result} />;
 
-const placeholderSave = () => (
-  <Button variant="secondary" disabled>
-    <BookmarkSimple size={16} />
-    Save
-  </Button>
-);
-
-export function SearchPage({ renderSaveAction = placeholderSave }: SearchPageProps) {
+export function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const q = searchParams.get('q')?.trim() ?? '';
 
