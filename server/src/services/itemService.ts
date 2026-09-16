@@ -4,6 +4,7 @@ import { ImageAsset } from '../models/ImageAsset.js';
 import { SavedItem } from '../models/SavedItem.js';
 import { AppError } from '../utils/AppError.js';
 import { splitTags, titleFromTags } from '../utils/titleFromTags.js';
+import { removeOrphanAssets } from './assetService.js';
 import { getOwnedCollection, touchCollection } from './collectionService.js';
 import * as pixabay from './pixabayService.js';
 
@@ -93,4 +94,14 @@ export async function updateItem(
   await item.save();
   await touchCollection(collection._id);
   return item;
+}
+
+// Removes the image from this collection only; the same image in other collections is untouched.
+export async function removeItem(ownerId: Types.ObjectId, collectionId: string, itemId: string) {
+  const collection = await getOwnedCollection(ownerId, collectionId);
+  const item = await getItemInCollection(collection._id, itemId);
+
+  await item.deleteOne();
+  await removeOrphanAssets([item.asset]);
+  await touchCollection(collection._id);
 }

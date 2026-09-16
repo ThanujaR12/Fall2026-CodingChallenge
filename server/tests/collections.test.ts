@@ -3,6 +3,8 @@ import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import { Collection } from '../src/models/Collection.js';
+import { ImageAsset } from '../src/models/ImageAsset.js';
+import { SavedItem } from '../src/models/SavedItem.js';
 import { getStandInUserId } from '../src/services/userService.js';
 
 const app = createApp();
@@ -179,5 +181,39 @@ describe('PATCH /api/collections/:id', () => {
       .send({ description: 'd'.repeat(281) });
     expect(long.status).toBe(400);
     expect(long.body.error.fields.description).toEqual(expect.any(String));
+  });
+});
+
+describe('DELETE /api/collections/:id', () => {
+  async function saveItem(collectionId: string, sourceId: string) {
+    const res = await request(app)
+      .post(`/api/collections/${collectionId}/items`)
+      .send({ sourceId });
+    expect(res.status).toBe(201);
+  }
+
+  it('deletes the collection, its items, and image copies only it used', async () => {
+    const doomed = await createCollection('Doomed');
+    const keeper = await createCollection('Keeper');
+    await saveItem(doomed.id, '101'); // only in Doomed
+    await saveItem(doomed.id, '102'); // also in Keeper
+    await saveItem(keeper.id, '102');
+
+    const res = await request(app).delete(`/api/collections/${doomed.id}`);
+
+    expect(res.status).toBe(204);
+    expect(await Collection.exists({ _id: doomed.id })).toBeNull();
+    expect(await SavedItem.countDocuments({ collectionId: doomed.id })).toBe(0);
+    const remainingAssets = await ImageAsset.find().select('sourceId');
+    expect(remainingAssets.map((asset) => asset.sourceId)).toEqual(['102']);
+
+    const gone = await request(app).get(`/api/collections/${doomed.id}`);
+    expect(gone.status).toBe(404);
+  });
+
+  it('returns COLLECTION_NOT_FOUND for an unknown collection', async () => {
+    const res = await request(app).delete('/api/collections/66e8a1f2c3b4d5e6f7a8b9c0');
+    expect(res.status).toBe(404);
+    expect(res.body.error.code).toBe('COLLECTION_NOT_FOUND');
   });
 });

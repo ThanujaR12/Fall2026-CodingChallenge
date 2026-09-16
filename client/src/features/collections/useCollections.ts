@@ -2,6 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createCollection,
+  deleteCollection,
   getCollection,
   listCollections,
   updateCollection,
@@ -49,6 +50,18 @@ export function useUpdateCollection(id: string) {
       queryClient.setQueryData<CollectionDetail>(queryKeys.collection(id), (current) =>
         current ? { ...current, ...updated } : current,
       );
+      void queryClient.invalidateQueries({ queryKey: ['collections'] });
+    },
+  });
+}
+
+export function useDeleteCollection() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteCollection,
+    // The page navigates away after deleting; refreshing the lists is enough here.
+    onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['collections'] });
     },
   });

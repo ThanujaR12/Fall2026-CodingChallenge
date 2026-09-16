@@ -235,6 +235,20 @@ curl -X PATCH http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0 \
   -d '{"name":"Coast","description":"Lighthouses only"}'
 ```
 
+### `DELETE /collections/:id`
+
+Permanently deletes a collection and everything saved in it. Stored image copies are removed too,
+unless another collection still uses the same image. (The client asks for confirmation first.)
+
+- **Auth**: none (stand-in user)
+- **Params**: `id` — collection id
+- **Response 204**: no body
+- **Errors**: `400 VALIDATION_ERROR` (malformed id), `404 COLLECTION_NOT_FOUND`
+
+```bash
+curl -X DELETE http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0
+```
+
 ## Items
 
 ### `POST /collections/:id/items`
@@ -295,6 +309,21 @@ Edits a saved image's display title and/or personal note.
 curl -X PATCH http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0/items/66e8a3b1c2d4e5f6a7b8c9d0 \
   -H "Content-Type: application/json" \
   -d '{"title":"Hallway light","note":"For the upstairs hallway"}'
+```
+
+### `DELETE /collections/:id/items/:itemId`
+
+Removes a saved image from one collection. The same image saved in other collections (with its own
+title and note) is not affected.
+
+- **Auth**: none (stand-in user)
+- **Params**: `id` — collection id; `itemId` — saved item id
+- **Response 204**: no body
+- **Errors**: `400 VALIDATION_ERROR` (malformed ids), `404 COLLECTION_NOT_FOUND`,
+  `404 ITEM_NOT_FOUND`
+
+```bash
+curl -X DELETE http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0/items/66e8a3b1c2d4e5f6a7b8c9d0
 ```
 
 ## Images

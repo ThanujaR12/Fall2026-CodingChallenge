@@ -1,4 +1,4 @@
-// Single collection screen: header with Edit, saved images, and the item detail panel (?item=).
+// Single collection screen: header with Edit/Delete, saved images, and item detail (?item=).
 import { useEffect } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 import { Images, SquaresFour } from '@phosphor-icons/react';
@@ -10,6 +10,7 @@ import { PageContainer } from '@/components/PageContainer';
 import { buttonVariants } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CollectionHeader } from '@/features/collections/CollectionHeader';
+import { DeleteCollectionDialog } from '@/features/collections/DeleteCollectionDialog';
 import { EditCollectionDialog } from '@/features/collections/EditCollectionDialog';
 import { useCollection } from '@/features/collections/useCollections';
 import { ItemDetailPanel } from '@/features/items/ItemDetailPanel';
@@ -84,7 +85,15 @@ export function CollectionPage() {
 
   return (
     <PageContainer className="pt-6 md:pt-10">
-      <CollectionHeader collection={data} actions={<EditCollectionDialog collection={data} />} />
+      <CollectionHeader
+        collection={data}
+        actions={
+          <>
+            <EditCollectionDialog collection={data} />
+            <DeleteCollectionDialog collection={data} />
+          </>
+        }
+      />
 
       {data.items.length === 0 ? (
         <EmptyState
@@ -105,7 +114,12 @@ export function CollectionPage() {
             selectedId={selectedItem?.id}
             onOpen={(item) => openItem(item.id)}
           />
-          <ItemDetailPanel item={selectedItem} onClose={closeItem} />
+          <ItemDetailPanel
+            collectionId={data.id}
+            collectionName={data.name}
+            item={selectedItem}
+            onClose={closeItem}
+          />
         </div>
       )}
     </PageContainer>

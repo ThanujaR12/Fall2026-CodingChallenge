@@ -18,3 +18,9 @@ export async function updateItem(req: Request, res: Response) {
   const item = await itemService.updateItem(req.userId, id, itemId, changes);
   res.json({ item: toSavedItem(item) });
 }
+
+export async function removeItem(req: Request, res: Response) {
+  const { id, itemId } = res.locals.params as ItemParams;
+  await itemService.removeItem(req.userId, id, itemId);
+  res.status(204).end();
+}

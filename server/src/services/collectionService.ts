@@ -3,6 +3,7 @@ import type { Types } from 'mongoose';
 import { Collection } from '../models/Collection.js';
 import { SavedItem } from '../models/SavedItem.js';
 import { AppError } from '../utils/AppError.js';
+import { removeOrphanAssets } from './assetService.js';
 
 export type CollectionStats = {
   itemCount: number;
@@ -163,4 +164,14 @@ export async function getCollectionDetail(ownerId: Types.ObjectId, collectionId:
     : { ...emptyStats };
 
   return { collection, stats, items };
+}
+
+// Permanently deletes a collection, its saved items, and image copies no other collection uses.
+export async function deleteCollection(ownerId: Types.ObjectId, collectionId: string) {
+  const collection = await getOwnedCollection(ownerId, collectionId);
+  const assetIds = await SavedItem.distinct('asset', { collectionId: collection._id });
+
+  await SavedItem.deleteMany({ collectionId: collection._id });
+  await removeOrphanAssets(assetIds);
+  await collection.deleteOne();
 }

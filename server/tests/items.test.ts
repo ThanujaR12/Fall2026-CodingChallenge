@@ -218,3 +218,46 @@ describe('PATCH /api/collections/:id/items/:itemId', () => {
     expect(res.status).toBe(400);
   });
 });
+
+describe('DELETE /api/collections/:id/items/:itemId', () => {
+  it('removes the image from one collection only and keeps the shared image copy', async () => {
+    const a = await savedItemIn('A');
+    const b = await savedItemIn('B');
+    await request(app)
+      .patch(`/api/collections/${b.collectionId}/items/${b.itemId}`)
+      .send({ title: 'Kept in B', note: 'still here' });
+    const before = (await Collection.findById(a.collectionId))!.updatedAt;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    const res = await request(app).delete(`/api/collections/${a.collectionId}/items/${a.itemId}`);
+
+    expect(res.status).toBe(204);
+    expect(await SavedItem.exists({ _id: a.itemId })).toBeNull();
+    const inB = await SavedItem.findById(b.itemId);
+    expect(inB).toMatchObject({ title: 'Kept in B', note: 'still here' });
+    expect(await ImageAsset.countDocuments()).toBe(1);
+    const after = (await Collection.findById(a.collectionId))!.updatedAt;
+    expect(after.getTime()).toBeGreaterThan(before.getTime());
+  });
+
+  it('deletes the stored image copy once no collection uses it', async () => {
+    const a = await savedItemIn('A');
+    const b = await savedItemIn('B');
+    await request(app).delete(`/api/collections/${a.collectionId}/items/${a.itemId}`);
+
+    const res = await request(app).delete(`/api/collections/${b.collectionId}/items/${b.itemId}`);
+
+    expect(res.status).toBe(204);
+    expect(await ImageAsset.countDocuments()).toBe(0);
+  });
+
+  it('returns ITEM_NOT_FOUND when removing the same item twice', async () => {
+    const { collectionId, itemId } = await savedItemIn('A');
+    await request(app).delete(`/api/collections/${collectionId}/items/${itemId}`);
+
+    const res = await request(app).delete(`/api/collections/${collectionId}/items/${itemId}`);
+
+    expect(res.status).toBe(404);
+    expect(res.body.error.code).toBe('ITEM_NOT_FOUND');
+  });
+});

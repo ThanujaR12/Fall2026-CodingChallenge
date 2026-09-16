@@ -35,3 +35,9 @@ export async function updateCollection(req: Request, res: Response) {
   const { collection, stats } = await collectionService.updateCollection(req.userId, id, changes);
   res.json({ collection: toCollectionSummary(collection, stats) });
 }
+
+export async function deleteCollection(req: Request, res: Response) {
+  const { id } = res.locals.params as IdParams;
+  await collectionService.deleteCollection(req.userId, id);
+  res.status(204).end();
+}

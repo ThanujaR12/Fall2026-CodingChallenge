@@ -21,6 +21,7 @@ collectionRoutes.patch(
   validate({ params: idParams, body: updateCollectionBody }),
   collections.updateCollection,
 );
+collectionRoutes.delete('/:id', validate({ params: idParams }), collections.deleteCollection);
 
 collectionRoutes.post(
   '/:id/items',
@@ -32,3 +33,4 @@ collectionRoutes.patch(
   validate({ params: itemParams, body: updateItemBody }),
   items.updateItem,
 );
+collectionRoutes.delete('/:id/items/:itemId', validate({ params: itemParams }), items.removeItem);
