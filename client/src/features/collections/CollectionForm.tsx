@@ -86,7 +86,7 @@ export function CollectionForm({
 
       <div className="grid gap-1.5">
         <Label htmlFor="collection-description">
-          Description <span className="text-ink/55">— optional</span>
+          Description <span className="text-ink/65">— optional</span>
         </Label>
         <Textarea
           id="collection-description"
@@ -100,7 +100,7 @@ export function CollectionForm({
             setLocalErrors({ ...localErrors, description: undefined });
           }}
         />
-        <p id="collection-description-count" className="text-[12px] text-ink/60">
+        <p id="collection-description-count" className="text-[12px] text-ink/65">
           {values.description.length} / {DESCRIPTION_MAX}
         </p>
         {errors.description && (

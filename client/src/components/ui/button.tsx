@@ -5,7 +5,8 @@ import { Slot } from 'radix-ui';
 
 import { cn } from '@/lib/utils';
 
-const primary = 'bg-accent text-white hover:bg-accent-pressed';
+// Fill is the AA-safe cyan (white text ≥ 4.5:1); the lighter #0088B0 stays for rings and borders.
+const primary = 'bg-accent-strong text-white hover:bg-accent-deep';
 const secondary = 'bg-surface text-ink border border-divider hover:bg-accent-tint';
 
 const buttonVariants = cva(

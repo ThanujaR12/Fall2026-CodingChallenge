@@ -24,7 +24,7 @@ export function CollectionCard({ collection }: { collection: CollectionSummary }
             className="stripe-placeholder flex w-full items-center justify-center"
             style={{ aspectRatio: '16 / 10' }}
           >
-            <span className="text-[13px] text-ink/55 italic">No images yet</span>
+            <span className="text-[13px] text-ink/65 italic">No images yet</span>
           </div>
         )}
         <h3 className="mt-3 text-[20px] group-hover:text-accent-deep">{collection.name}</h3>

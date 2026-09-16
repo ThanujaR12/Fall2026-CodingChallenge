@@ -6,15 +6,18 @@ import { cn } from '@/lib/utils';
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   cn(
-    'inline-flex min-h-11 items-center text-[15px] hover:text-accent md:min-h-9',
-    isActive ? 'text-accent' : 'text-ink',
+    'inline-flex min-h-11 items-center text-[15px] hover:text-accent-deep md:min-h-9',
+    isActive ? 'text-accent-deep' : 'text-ink',
   );
 
 export function AppHeader() {
   return (
     <header className="border-b border-divider md:border-b-0">
       <PageContainer className="flex min-h-[56px] items-center justify-between gap-4">
-        <Link to="/search" className="text-[18px] font-semibold tracking-[-0.015em] text-ink">
+        <Link
+          to="/search"
+          className="inline-flex min-h-11 items-center text-[18px] font-semibold tracking-[-0.015em] text-ink"
+        >
           {APP_NAME}
         </Link>
         <nav aria-label="Main" className="flex items-center gap-5">

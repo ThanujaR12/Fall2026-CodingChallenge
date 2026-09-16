@@ -26,7 +26,7 @@ export function CollectionPickerRow({
     >
       <div className="min-w-0">
         <p className="truncate text-[15px]">{collection.name}</p>
-        <p className="text-[12px] text-ink/60">{imageCount(collection.itemCount)}</p>
+        <p className="text-[12px] text-ink/65">{imageCount(collection.itemCount)}</p>
       </div>
 
       {alreadySaved ? (

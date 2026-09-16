@@ -63,7 +63,7 @@ export function ItemEditForm({ item }: ItemEditFormProps) {
         {item.note ? (
           <p className="text-[14px] whitespace-pre-line text-ink/80">{item.note}</p>
         ) : (
-          <p className="text-[14px] text-ink/55 italic">No note yet</p>
+          <p className="text-[14px] text-ink/65 italic">No note yet</p>
         )}
       </div>
     );
@@ -88,7 +88,7 @@ export function ItemEditForm({ item }: ItemEditFormProps) {
       <div className="grid gap-1.5">
         <Label htmlFor={`note-${item.id}`}>
           Personal note{' '}
-          <span className="text-ink/55">
+          <span className="text-ink/65">
             — {note.length} / {NOTE_MAX}
           </span>
         </Label>

@@ -30,7 +30,7 @@ export function SearchResultCard({ result, renderSaveAction }: SearchResultCardP
             {result.tags.slice(0, 3).map((tag, index) => (
               // Two tags on phones, three on larger screens.
               <li key={tag} className={index === 2 ? 'hidden md:block' : ''}>
-                <span className="tag tag-neutral">{tag}</span>
+                <span className="tag bg-surface text-ink/75 md:bg-paper">{tag}</span>
               </li>
             ))}
           </ul>

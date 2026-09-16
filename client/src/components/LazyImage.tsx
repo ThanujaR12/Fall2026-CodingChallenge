@@ -22,7 +22,7 @@ export function LazyImage({ src, alt, width, height, aspect, className }: LazyIm
       style={{ aspectRatio }}
     >
       {failed ? (
-        <span className="absolute inset-0 flex items-center justify-center text-[12px] text-ink/55 italic">
+        <span className="absolute inset-0 flex items-center justify-center text-[12px] text-ink/65 italic">
           image unavailable
         </span>
       ) : (

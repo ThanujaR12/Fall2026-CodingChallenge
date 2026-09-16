@@ -142,7 +142,7 @@ export function ItemDetailPanel({
           Item detail
         </p>
         {details ?? (
-          <p className="stripe-placeholder flex aspect-[4/3] items-center justify-center px-6 text-center text-[14px] text-ink/60 italic">
+          <p className="stripe-placeholder flex aspect-[4/3] items-center justify-center px-6 text-center text-[14px] text-ink/65 italic">
             Select an image to see its details and add a note.
           </p>
         )}

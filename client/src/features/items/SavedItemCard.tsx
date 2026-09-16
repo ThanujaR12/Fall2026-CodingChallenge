@@ -29,7 +29,7 @@ export function SavedItemCard({ item, isSelected = false, onOpen }: SavedItemCar
         <h3 className="mt-2.5 truncate text-[15px] group-hover:text-accent-deep">{item.title}</h3>
       </button>
       {/* Outside the button so the link is not nested inside another control. */}
-      <ImageCredit creatorName={item.creatorName} pageUrl={item.pageUrl} className="truncate" />
+      <ImageCredit creatorName={item.creatorName} pageUrl={item.pageUrl} />
     </article>
   );
 }

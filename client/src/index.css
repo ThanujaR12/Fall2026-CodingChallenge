@@ -14,6 +14,8 @@
   /* The one interactive ink (cyan) */
   --color-accent: #0088b0;
   --color-accent-pressed: #1186ac;
+  /* Slightly deeper cyan for button fills and text so white/paper contrast stays >= 4.5:1. */
+  --color-accent-strong: #007a9e;
   --color-accent-deep: #006786;
   --color-accent-tint: #e9f8ff;
 
@@ -53,12 +55,12 @@
   --card-foreground: var(--color-ink);
   --popover: var(--color-paper);
   --popover-foreground: var(--color-ink);
-  --primary: var(--color-accent);
+  --primary: var(--color-accent-strong);
   --primary-foreground: #ffffff;
   --secondary: var(--color-surface);
   --secondary-foreground: var(--color-ink);
   --muted: var(--color-surface);
-  --muted-foreground: rgba(32, 30, 29, 0.6);
+  --muted-foreground: rgba(32, 30, 29, 0.65);
   --accent: var(--color-accent-tint);
   --accent-foreground: var(--color-ink);
   --destructive: var(--color-accent2-deep);
@@ -136,7 +138,7 @@
     font-size: 11px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: rgba(32, 30, 29, 0.55);
+    color: rgba(32, 30, 29, 0.65);
   }
 
   /* Newsprint dot-screen treatment for photographs. */

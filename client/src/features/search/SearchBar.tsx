@@ -25,7 +25,7 @@ export function SearchBar({ initialQuery, onSearch }: SearchBarProps) {
         </label>
         <MagnifyingGlass
           size={18}
-          className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-ink/55"
+          className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-ink/65"
           aria-hidden="true"
         />
         <Input
@@ -35,11 +35,11 @@ export function SearchBar({ initialQuery, onSearch }: SearchBarProps) {
           onChange={(event) => setValue(event.target.value)}
           maxLength={MAX_QUERY}
           placeholder="Search for images, e.g. coastal fog"
-          className="min-h-[42px] pl-10 text-[16px] md:min-h-[42px]"
+          className="min-h-11 pl-10 text-[16px] md:min-h-[42px]"
           autoComplete="off"
         />
       </div>
-      <Button type="submit" size="lg" className="min-h-[42px] md:min-h-[42px]">
+      <Button type="submit" size="lg" className="min-h-11 md:min-h-[42px]">
         Search
       </Button>
     </form>
