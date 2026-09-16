@@ -143,3 +143,57 @@ as Pixabay requires.
 ```bash
 curl "http://localhost:4000/api/search/images?q=lighthouse&page=1"
 ```
+
+## Collections
+
+### `GET /collections`
+
+Lists the current user's collections, most recently updated first. Creating, renaming, or editing
+a collection, or saving, editing, or removing one of its items, counts as an update.
+
+- **Auth**: none (stand-in user)
+- **Query**: none
+- **Response 200**: `{ "collections": [CollectionSummary] }`
+
+  ```json
+  {
+    "collections": [
+      {
+        "id": "66e8a1f2c3b4d5e6f7a8b9c0",
+        "name": "Coast trip",
+        "description": "Lighthouses and fog",
+        "itemCount": 3,
+        "coverImageUrl": "/api/images/66e8a2...",
+        "coverCreatorName": "jplenio",
+        "coverPageUrl": "https://pixabay.com/photos/lighthouse-736877/",
+        "createdAt": "2026-09-16T18:02:11.000Z",
+        "updatedAt": "2026-09-16T18:10:45.000Z"
+      }
+    ]
+  }
+  ```
+
+- **Errors**: `400 VALIDATION_ERROR`
+
+```bash
+curl http://localhost:4000/api/collections
+```
+
+### `POST /collections`
+
+Creates a collection.
+
+- **Auth**: none (stand-in user)
+- **Body**:
+  - `name` (required): 1–60 characters after trimming; must not match another of your collections
+    (ignoring case and surrounding spaces)
+  - `description` (optional): up to 280 characters, default `""`
+- **Response 201**: `{ "collection": CollectionSummary }` (with `itemCount: 0` and null cover fields)
+- **Errors**: `400 VALIDATION_ERROR` (with `fields.name` / `fields.description`),
+  `409 COLLECTION_NAME_TAKEN`
+
+```bash
+curl -X POST http://localhost:4000/api/collections \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Coast trip","description":"Lighthouses and fog"}'
+```
