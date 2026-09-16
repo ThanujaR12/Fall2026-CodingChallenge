@@ -1,6 +1,10 @@
 // Handles collection requests: reads validated input, calls the service, shapes the response.
 import type { Request, Response } from 'express';
-import type { CreateCollectionBody, ListCollectionsQuery } from '../schemas/collectionSchemas.js';
+import type {
+  CreateCollectionBody,
+  ListCollectionsQuery,
+  UpdateCollectionBody,
+} from '../schemas/collectionSchemas.js';
 import type { IdParams } from '../schemas/common.js';
 import * as collectionService from '../services/collectionService.js';
 import { toCollectionSummary, toSavedItem } from '../utils/toDto.js';
@@ -23,4 +27,11 @@ export async function getCollection(req: Request, res: Response) {
   res.json({
     collection: { ...toCollectionSummary(collection, stats), items: items.map(toSavedItem) },
   });
+}
+
+export async function updateCollection(req: Request, res: Response) {
+  const { id } = res.locals.params as IdParams;
+  const changes = req.body as UpdateCollectionBody;
+  const { collection, stats } = await collectionService.updateCollection(req.userId, id, changes);
+  res.json({ collection: toCollectionSummary(collection, stats) });
 }

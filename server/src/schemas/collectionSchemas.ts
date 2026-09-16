@@ -17,6 +17,12 @@ export const createCollectionBody = z.object({
   description: descriptionField.default(''),
 });
 
+export const updateCollectionBody = z
+  .object({ name: nameField.optional(), description: descriptionField.optional() })
+  .refine((body) => body.name !== undefined || body.description !== undefined, {
+    message: 'Nothing to update.',
+  });
+
 export const listCollectionsQuery = z.object({
   sourceId: z
     .string()
@@ -25,4 +31,5 @@ export const listCollectionsQuery = z.object({
 });
 
 export type CreateCollectionBody = z.infer<typeof createCollectionBody>;
+export type UpdateCollectionBody = z.infer<typeof updateCollectionBody>;
 export type ListCollectionsQuery = z.infer<typeof listCollectionsQuery>;

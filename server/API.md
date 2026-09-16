@@ -215,6 +215,26 @@ Returns one collection with all of its saved items, newest first.
 curl http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0
 ```
 
+### `PATCH /collections/:id`
+
+Renames a collection and/or edits its description. Uses the same rules as creation.
+
+- **Auth**: none (stand-in user)
+- **Params**: `id` — collection id
+- **Body** (at least one field):
+  - `name`: 1–60 characters after trimming; must not match another of your collections (changing
+    only the capitalization of its own name is allowed)
+  - `description`: up to 280 characters
+- **Response 200**: `{ "collection": CollectionSummary }`
+- **Errors**: `400 VALIDATION_ERROR` (including an empty body), `404 COLLECTION_NOT_FOUND`,
+  `409 COLLECTION_NAME_TAKEN`
+
+```bash
+curl -X PATCH http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0 \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Coast","description":"Lighthouses only"}'
+```
+
 ## Items
 
 ### `POST /collections/:id/items`
@@ -253,7 +273,28 @@ does not allow permanent hotlinking.
   `502 IMAGE_SOURCE_UNAVAILABLE`
 
 ```bash
-curl -X POST http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0/items   -H "Content-Type: application/json"   -d '{"sourceId":"736877"}'
+curl -X POST http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0/items \
+  -H "Content-Type: application/json" \
+  -d '{"sourceId":"736877"}'
+```
+
+### `PATCH /collections/:id/items/:itemId`
+
+Edits a saved image's display title and/or personal note.
+
+- **Auth**: none (stand-in user)
+- **Params**: `id` — collection id; `itemId` — saved item id
+- **Body** (at least one field):
+  - `title`: up to 100 characters after trimming; an empty title resets it to the tag-based default
+  - `note`: up to 500 characters
+- **Response 200**: `{ "item": SavedItem }`
+- **Errors**: `400 VALIDATION_ERROR` (with `fields.title` / `fields.note`, or an empty body),
+  `404 COLLECTION_NOT_FOUND`, `404 ITEM_NOT_FOUND`
+
+```bash
+curl -X PATCH http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0/items/66e8a3b1c2d4e5f6a7b8c9d0 \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Hallway light","note":"For the upstairs hallway"}'
 ```
 
 ## Images

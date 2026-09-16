@@ -149,3 +149,72 @@ describe('GET /api/images/:id', () => {
     expect(res.body.error.code).toBe('IMAGE_NOT_FOUND');
   });
 });
+
+async function savedItemIn(collectionName: string, sourceId = '101') {
+  const collectionId = await createCollection(collectionName);
+  const res = await saveItem(collectionId, sourceId);
+  expect(res.status).toBe(201);
+  return { collectionId, itemId: res.body.item.id as string };
+}
+
+describe('PATCH /api/collections/:id/items/:itemId', () => {
+  it('updates the title and note', async () => {
+    const { collectionId, itemId } = await savedItemIn('Coast trip');
+
+    const res = await request(app)
+      .patch(`/api/collections/${collectionId}/items/${itemId}`)
+      .send({ title: 'Hallway light', note: 'for the hallway' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.item).toMatchObject({ title: 'Hallway light', note: 'for the hallway' });
+  });
+
+  it('rejects a 501-character note and a 101-character title', async () => {
+    const { collectionId, itemId } = await savedItemIn('Coast trip');
+    const url = `/api/collections/${collectionId}/items/${itemId}`;
+
+    const note = await request(app)
+      .patch(url)
+      .send({ note: 'n'.repeat(501) });
+    expect(note.status).toBe(400);
+    expect(note.body.error.code).toBe('VALIDATION_ERROR');
+    expect(note.body.error.fields.note).toEqual(expect.any(String));
+
+    const title = await request(app)
+      .patch(url)
+      .send({ title: 't'.repeat(101) });
+    expect(title.status).toBe(400);
+    expect(title.body.error.fields.title).toEqual(expect.any(String));
+  });
+
+  it('resets a blank title to the tag-derived default', async () => {
+    const { collectionId, itemId } = await savedItemIn('Coast trip');
+    const url = `/api/collections/${collectionId}/items/${itemId}`;
+    await request(app).patch(url).send({ title: 'Custom' });
+
+    const res = await request(app).patch(url).send({ title: '   ' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.item.title).toBe('Lighthouse, coast');
+  });
+
+  it('returns ITEM_NOT_FOUND when the item belongs to another collection', async () => {
+    const { itemId } = await savedItemIn('Coast trip');
+    const otherCollection = await createCollection('Other');
+
+    const res = await request(app)
+      .patch(`/api/collections/${otherCollection}/items/${itemId}`)
+      .send({ note: 'hi' });
+
+    expect(res.status).toBe(404);
+    expect(res.body.error.code).toBe('ITEM_NOT_FOUND');
+  });
+
+  it('rejects an empty update', async () => {
+    const { collectionId, itemId } = await savedItemIn('Coast trip');
+    const res = await request(app)
+      .patch(`/api/collections/${collectionId}/items/${itemId}`)
+      .send({});
+    expect(res.status).toBe(400);
+  });
+});

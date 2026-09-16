@@ -1,6 +1,6 @@
-// Single collection screen: header and saved images, with loading, empty, and error states.
+// Single collection screen: header with Edit, saved images, and the item detail panel (?item=).
 import { useEffect } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import { Images, SquaresFour } from '@phosphor-icons/react';
 import { ApiError } from '@/api/client';
 import { EmptyState } from '@/components/EmptyState';
@@ -10,18 +10,33 @@ import { PageContainer } from '@/components/PageContainer';
 import { buttonVariants } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CollectionHeader } from '@/features/collections/CollectionHeader';
+import { EditCollectionDialog } from '@/features/collections/EditCollectionDialog';
 import { useCollection } from '@/features/collections/useCollections';
+import { ItemDetailPanel } from '@/features/items/ItemDetailPanel';
 import { SavedItemGrid } from '@/features/items/SavedItemGrid';
 import { APP_NAME } from '@/lib/constants';
 
 export function CollectionPage() {
   const { id = '' } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const collection = useCollection(id);
   const name = collection.data?.name;
+
+  // The open item lives in the URL so reloads keep it and browser Back closes it.
+  const selectedId = searchParams.get('item');
+  const selectedItem = collection.data?.items.find((item) => item.id === selectedId) ?? null;
 
   useEffect(() => {
     document.title = name ? `${name} · ${APP_NAME}` : `Collection · ${APP_NAME}`;
   }, [name]);
+
+  function openItem(itemId: string) {
+    setSearchParams({ item: itemId }, { preventScrollReset: true });
+  }
+
+  function closeItem() {
+    setSearchParams({}, { preventScrollReset: true });
+  }
 
   if (collection.isPending) {
     return (
@@ -69,7 +84,7 @@ export function CollectionPage() {
 
   return (
     <PageContainer className="pt-6 md:pt-10">
-      <CollectionHeader collection={data} />
+      <CollectionHeader collection={data} actions={<EditCollectionDialog collection={data} />} />
 
       {data.items.length === 0 ? (
         <EmptyState
@@ -83,7 +98,15 @@ export function CollectionPage() {
           }
         />
       ) : (
-        <SavedItemGrid items={data.items} onOpen={() => undefined} />
+        // The detail column is always reserved on wide screens, so opening an item never reflows the grid.
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-10">
+          <SavedItemGrid
+            items={data.items}
+            selectedId={selectedItem?.id}
+            onOpen={(item) => openItem(item.id)}
+          />
+          <ItemDetailPanel item={selectedItem} onClose={closeItem} />
+        </div>
       )}
     </PageContainer>
   );

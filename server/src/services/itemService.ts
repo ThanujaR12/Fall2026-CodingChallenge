@@ -68,3 +68,29 @@ export async function saveItem(ownerId: Types.ObjectId, collectionId: string, so
   await touchCollection(collection._id);
   return item;
 }
+
+async function getItemInCollection(collectionId: Types.ObjectId, itemId: string) {
+  const item = await SavedItem.findOne({ _id: itemId, collectionId });
+  if (!item) throw new AppError(404, 'ITEM_NOT_FOUND', "That image isn't in this collection.");
+  return item;
+}
+
+export async function updateItem(
+  ownerId: Types.ObjectId,
+  collectionId: string,
+  itemId: string,
+  changes: { title?: string; note?: string },
+) {
+  const collection = await getOwnedCollection(ownerId, collectionId);
+  const item = await getItemInCollection(collection._id, itemId);
+
+  if (changes.title !== undefined) {
+    // Clearing the title brings back the readable default built from the tags.
+    item.title = changes.title || titleFromTags(item.tags.join(', '));
+  }
+  if (changes.note !== undefined) item.note = changes.note;
+
+  await item.save();
+  await touchCollection(collection._id);
+  return item;
+}

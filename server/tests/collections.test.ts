@@ -132,3 +132,52 @@ describe('collection covers and detail', () => {
     expect(malformed.body.error.code).toBe('VALIDATION_ERROR');
   });
 });
+
+describe('PATCH /api/collections/:id', () => {
+  it('renames a collection and bumps updatedAt', async () => {
+    const created = await createCollection('Kitchen ideas');
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    const res = await request(app)
+      .patch(`/api/collections/${created.id}`)
+      .send({ name: 'Kitchen', description: 'Only the good ones' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.collection).toMatchObject({
+      name: 'Kitchen',
+      description: 'Only the good ones',
+    });
+    expect(new Date(res.body.collection.updatedAt).getTime()).toBeGreaterThan(
+      new Date(created.updatedAt).getTime(),
+    );
+  });
+
+  it('rejects renaming to the name of another collection in different case', async () => {
+    await createCollection('Garden');
+    const other = await createCollection('Kitchen');
+    const res = await request(app).patch(`/api/collections/${other.id}`).send({ name: 'GARDEN' });
+    expect(res.status).toBe(409);
+    expect(res.body.error.code).toBe('COLLECTION_NAME_TAKEN');
+  });
+
+  it('allows changing only the case of its own name', async () => {
+    const created = await createCollection('kitchen');
+    const res = await request(app)
+      .patch(`/api/collections/${created.id}`)
+      .send({ name: 'Kitchen' });
+    expect(res.status).toBe(200);
+    expect(res.body.collection.name).toBe('Kitchen');
+  });
+
+  it('rejects an empty update and an over-long description', async () => {
+    const created = await createCollection('Kitchen');
+    const empty = await request(app).patch(`/api/collections/${created.id}`).send({});
+    expect(empty.status).toBe(400);
+
+    const long = await request(app)
+      .patch(`/api/collections/${created.id}`)
+      .send({ description: 'd'.repeat(281) });
+    expect(long.status).toBe(400);
+    expect(long.body.error.fields.description).toEqual(expect.any(String));
+  });
+});

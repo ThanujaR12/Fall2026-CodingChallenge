@@ -114,6 +114,32 @@ export async function getOwnedCollection(ownerId: Types.ObjectId, collectionId: 
   return collection;
 }
 
+export async function updateCollection(
+  ownerId: Types.ObjectId,
+  collectionId: string,
+  changes: { name?: string; description?: string },
+) {
+  const collection = await getOwnedCollection(ownerId, collectionId);
+
+  if (changes.name !== undefined) {
+    const nameKey = toNameKey(changes.name);
+    // Another collection with the same name is a clash; this collection's own name is fine.
+    const clash = await Collection.exists({
+      owner: ownerId,
+      nameKey,
+      _id: { $ne: collection._id },
+    });
+    if (clash) throw nameTaken();
+    collection.name = changes.name;
+    collection.nameKey = nameKey;
+  }
+  if (changes.description !== undefined) collection.description = changes.description;
+
+  await collection.save();
+  const stats = await statsFor([collection._id]);
+  return { collection, stats: stats.get(String(collection._id)) ?? { ...emptyStats } };
+}
+
 // Marks a collection as just changed so it moves to the top of the list.
 export async function touchCollection(collectionId: Types.ObjectId): Promise<void> {
   await Collection.updateOne({ _id: collectionId }, { $set: { updatedAt: new Date() } });
