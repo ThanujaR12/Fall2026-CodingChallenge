@@ -63,7 +63,7 @@ export function MemberList({ collectionId, owner, members, myUserId, canManage }
                     { onError: (error) => toast.error(error.message) },
                   )
                 }
-                className="min-h-11 cursor-pointer rounded-xl border border-divider bg-white/85 px-2 text-[14px] md:min-h-9"
+                className="min-h-11 cursor-pointer rounded-xl border border-divider bg-white/85 px-2 text-[16px] md:text-[14px] md:min-h-9"
               >
                 <option value="editor">Editor</option>
                 <option value="viewer">Viewer</option>
