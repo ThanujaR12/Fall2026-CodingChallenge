@@ -135,6 +135,20 @@ colors, with a palette stripe, and all text still meets AA contrast.
 4. **Voice search**: a microphone in the search bar (where the browser supports speech recognition).
 5. **Logo**: a four-tile "board" mark with the PixBoard wordmark, favicon, and app icons.
 
+### User Story 10 - Boards on Home and "More ideas" (Priority: P2)
+
+As a collector, my boards are one tap away on Home, and the app suggests photos to add to them.
+
+**Acceptance Scenarios**:
+
+1. **Given** I have boards, **When** I open Home, **Then** they appear in the chip row right after
+   "All" (cover or colour, then name); picking one shows "Ideas for <board>" with an Open board link.
+2. **Given** a board with photos, **When** I view its ideas (on Home or at the bottom of its page),
+   **Then** I see photos matching its most common specific tags ("Based on: boat, harbor"), without
+   photos it already holds; an empty board's ideas come from its name and description.
+3. **Given** I can edit the board, **When** I tap Add on an idea, **Then** it is saved to that board
+   at once ("Added"), rolling back if refused; viewers get the regular Save menu instead.
+
 ### Edge Cases
 
 - An image whose colors can't be read still saves; its board simply has fewer colors.
@@ -164,6 +178,9 @@ colors, with a palette stripe, and all text still meets AA contrast.
 - **FR-012**: Notifications MUST show actor, action, board, time, and read state; users can mark one
   or all as read; the bell shows the unread count.
 - **FR-013**: Board pages MUST show a recent activity history visible to anyone who can see the board.
+- **FR-014**: Home MUST list the user's boards (owned, and shared as editor) in the chip row, and
+  every board MUST offer recommended photos based on its specific tags (or name), excluding photos
+  already on it, with one-tap Add for editors.
 
 ### Key Entities
 

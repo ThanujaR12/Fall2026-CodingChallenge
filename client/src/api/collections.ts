@@ -1,5 +1,6 @@
 // HTTP calls for collections.
 import type {
+  RecommendationsResponse,
   BoardActivityEntry,
   CollectionDetail,
   CollectionInput,
@@ -46,4 +47,10 @@ export function deleteCollection(id: string): Promise<void> {
 export async function getBoardActivity(id: string): Promise<BoardActivityEntry[]> {
   const body = await request<{ activity: BoardActivityEntry[] }>(`/collections/${id}/activity`);
   return body.activity;
+}
+
+/** "More ideas for this board": photos like the board's, page by page. */
+export function getRecommendations(id: string, page: number): Promise<RecommendationsResponse> {
+  const params = new URLSearchParams({ page: String(page) });
+  return request<RecommendationsResponse>(`/collections/${id}/recommendations?${params}`);
 }

@@ -6,12 +6,16 @@ import type {
   UpdateCollectionBody,
 } from '../schemas/collectionSchemas.js';
 import type { IdParams } from '../schemas/common.js';
+import type { PageQuery } from '../schemas/collectionSchemas.js';
 import * as activityService from '../services/activityService.js';
+import * as recommendationService from '../services/recommendationService.js';
+import { PER_PAGE } from '../services/pixabayService.js';
 import * as collectionService from '../services/collectionService.js';
 import {
   toActivity,
   toCollectionDetail,
   toCollectionSummary,
+  toSearchResult,
   toSharedSummary,
 } from '../utils/toDto.js';
 
@@ -34,6 +38,20 @@ export async function getActivity(req: Request, res: Response) {
   const { id } = res.locals.params as IdParams;
   const activity = await activityService.listForCollection(req.userId, id);
   res.json({ activity: activity.map(toActivity) });
+}
+
+export async function getRecommendations(req: Request, res: Response) {
+  const { id } = res.locals.params as IdParams;
+  const { page } = res.locals.query as PageQuery;
+  const result = await recommendationService.recommendForCollection(req.userId, id, page);
+  res.json({
+    basedOn: result.basedOn,
+    results: result.hits.map(toSearchResult),
+    page,
+    perPage: PER_PAGE,
+    total: result.total,
+    hasMore: result.hasMore,
+  });
 }
 
 export async function getCollection(req: Request, res: Response) {

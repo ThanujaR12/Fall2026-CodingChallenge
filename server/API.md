@@ -412,6 +412,24 @@ curl http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0/activity \
   -H "Authorization: Bearer $TOKEN"
 ```
 
+### `GET /collections/:id/recommendations?page=`
+
+"More ideas for this board": photos similar to the board's, found by searching for its most common
+photo tags (two terms, widening to one if that finds fewer than 20), or words from its name and
+description while it is empty. Photos already on the board are left out. Anyone who can view the
+board may ask.
+
+- **Auth**: token required
+- **Query**: `page` (optional): 1–25, default `1`
+- **Response 200**: the same shape as `GET /search/images`, plus `"basedOn": ["harbor", "boat"]`
+  (the words searched)
+- **Errors**: `400 VALIDATION_ERROR`, `404 COLLECTION_NOT_FOUND`, `502 IMAGE_SOURCE_UNAVAILABLE`
+
+```bash
+curl "http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0/recommendations" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
 ### `DELETE /collections/:id`
 
 Permanently deletes a collection and everything saved in it. Stored image copies are removed too,

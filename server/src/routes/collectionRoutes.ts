@@ -8,6 +8,7 @@ import { validate } from '../middleware/validate.js';
 import {
   createCollectionBody,
   listCollectionsQuery,
+  pageQuery,
   updateCollectionBody,
 } from '../schemas/collectionSchemas.js';
 import { idParams } from '../schemas/common.js';
@@ -20,6 +21,11 @@ collectionRoutes.get('/', validate({ query: listCollectionsQuery }), collections
 collectionRoutes.post('/', validate({ body: createCollectionBody }), collections.createCollection);
 collectionRoutes.get('/:id', validate({ params: idParams }), collections.getCollection);
 collectionRoutes.get('/:id/activity', validate({ params: idParams }), collections.getActivity);
+collectionRoutes.get(
+  '/:id/recommendations',
+  validate({ params: idParams, query: pageQuery }),
+  collections.getRecommendations,
+);
 collectionRoutes.patch(
   '/:id',
   validate({ params: idParams, body: updateCollectionBody }),

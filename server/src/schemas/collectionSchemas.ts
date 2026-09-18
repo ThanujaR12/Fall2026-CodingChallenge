@@ -37,6 +37,17 @@ export const listCollectionsQuery = z.object({
     .optional(),
 });
 
+// Paging for board recommendations (Pixabay exposes 500 results: 25 pages of 20).
+export const pageQuery = z.object({
+  page: z.coerce
+    .number()
+    .int()
+    .min(1, 'Page must be 1 or more.')
+    .max(25, 'No more ideas.')
+    .default(1),
+});
+export type PageQuery = z.infer<typeof pageQuery>;
+
 export type CreateCollectionBody = z.infer<typeof createCollectionBody>;
 export type UpdateCollectionBody = z.infer<typeof updateCollectionBody>;
 export type ListCollectionsQuery = z.infer<typeof listCollectionsQuery>;

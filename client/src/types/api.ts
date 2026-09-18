@@ -89,6 +89,8 @@ export type SharedView = CollectionSummary & { owner: PublicUser; items: SavedIt
 
 export type Visibility = 'private' | 'public';
 
+export type RecommendationsResponse = SearchResponse & { basedOn: string[] };
+
 export type BoardActivityEntry = {
   id: string;
   type: 'item_added' | 'item_edited' | 'item_removed' | 'member_invited';

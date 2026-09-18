@@ -20,6 +20,7 @@ import { ShareDialog } from '@/features/sharing/ShareDialog';
 import { SavedItemGrid } from '@/features/items/SavedItemGrid';
 import { BoardHero } from '@/features/palettes/BoardHero';
 import { BoardActivity } from '@/features/collections/BoardActivity';
+import { BoardIdeas } from '@/features/palettes/BoardIdeas';
 import { APP_NAME } from '@/lib/constants';
 
 export function CollectionPage() {
@@ -155,6 +156,12 @@ export function CollectionPage() {
       )}
 
       <BoardActivity collectionId={data.id} myUserId={myUserId} />
+      <BoardIdeas
+        boardId={data.id}
+        boardName={data.name}
+        canAdd={canEdit}
+        title="More ideas for this board"
+      />
     </PageContainer>
   );
 }

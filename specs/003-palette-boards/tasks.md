@@ -59,6 +59,11 @@ against a throwaway in-memory copy of the app (screenshots and scripted checks).
 - [X] T019 [US8] `GET /api/collections/:id/activity` (anyone who can view the board; one entry per change); tests; API.md (see commit "feat: board activity history")
 - [X] T020 [US8] "Recent activity" list on the board page (same commit)
 
+## Phase 7b: Boards on Home and "More ideas" (US10)
+
+- [X] T023 [US10] `GET /api/collections/:id/recommendations` (top specific tags, widening, name fallback, excludes saved photos); tests; API.md
+- [X] T024 [US10] Board chips after "All" on Home with "Ideas for <board>"; "More ideas for this board" on board pages; one-tap optimistic Add
+
 ## Phase 8: Polish
 
 - [ ] T021 README.txt: features tour, setup, live link

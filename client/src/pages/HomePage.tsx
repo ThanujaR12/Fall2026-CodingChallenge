@@ -1,9 +1,12 @@
 // Home: a Pinterest-style board of popular photos, filtered by topic chips, with search on top.
+// Your boards sit in the same chip row; picking one shows recommended photos to add to it.
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { PageContainer } from '@/components/PageContainer';
 import { ImageFeed } from '@/features/feed/ImageFeed';
 import { TopicChips } from '@/features/feed/TopicChips';
+import { useCollections } from '@/features/collections/useCollections';
+import { BoardIdeas } from '@/features/palettes/BoardIdeas';
 import { useFeed } from '@/features/feed/useFeed';
 import { SaveToCollectionPopover } from '@/features/search/SaveToCollectionPopover';
 import { SearchBar } from '@/features/search/SearchBar';
@@ -20,15 +23,31 @@ export function HomePage() {
   const navigate = useNavigate();
   const raw = params.get('topic');
   const topic: FeedTopic = isFeedTopic(raw) ? raw : 'all';
-  const feed = useFeed(topic);
+  const collections = useCollections();
+  // Boards you can add to: your own, then shared ones where you're an editor.
+  const boards = [
+    ...(collections.data?.collections ?? []),
+    ...(collections.data?.shared ?? []).filter((b) => b.role === 'editor'),
+  ];
+  const board = boards.find((b) => b.id === params.get('board')) ?? null;
+  const feed = useFeed(topic, null, !board);
   const label = FEED_TOPICS.find((t) => t.id === topic)?.label ?? 'All';
 
   useEffect(() => {
-    document.title = topic === 'all' ? `Home · ${APP_NAME}` : `${label} · ${APP_NAME}`;
-  }, [topic, label]);
+    document.title = board
+      ? `Ideas for ${board.name} · ${APP_NAME}`
+      : topic === 'all'
+        ? `Home · ${APP_NAME}`
+        : `${label} · ${APP_NAME}`;
+  }, [board, topic, label]);
 
   function changeTopic(next: FeedTopic) {
     setParams(next === 'all' ? {} : { topic: next });
+    window.scrollTo({ top: 0 });
+  }
+
+  function chooseBoard(id: string) {
+    setParams({ board: id });
     window.scrollTo({ top: 0 });
   }
 
@@ -41,14 +60,33 @@ export function HomePage() {
           initialQuery=""
           onSearch={(q) => navigate(`/search?${new URLSearchParams({ q })}`)}
         />
-        <TopicChips value={topic} onChange={changeTopic} />
+        <TopicChips
+          topic={board ? null : topic}
+          boardId={board?.id ?? null}
+          boards={boards}
+          onTopic={changeTopic}
+          onBoard={chooseBoard}
+        />
       </div>
-      <ImageFeed
-        key={topic}
-        feed={feed}
-        label={topic === 'all' ? 'Popular photos' : `${label} photos`}
-        renderSaveAction={renderSaveAction}
-      />
+      {board ? (
+        <div className="-mt-10">
+          <BoardIdeas
+            key={board.id}
+            boardId={board.id}
+            boardName={board.name}
+            canAdd
+            title={<>Ideas for {board.name}</>}
+            showOpenLink
+          />
+        </div>
+      ) : (
+        <ImageFeed
+          key={topic}
+          feed={feed}
+          label={topic === 'all' ? 'Popular photos' : `${label} photos`}
+          renderSaveAction={renderSaveAction}
+        />
+      )}
     </PageContainer>
   );
 }
