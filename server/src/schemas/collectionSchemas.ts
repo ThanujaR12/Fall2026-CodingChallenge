@@ -12,16 +12,19 @@ export const descriptionField = z
   .trim()
   .max(280, 'Descriptions can be at most 280 characters.');
 
+const visibilityField = z.enum(['private', 'public'], { error: 'Choose public or private.' });
+
 export const createCollectionBody = z.object({
   name: nameField,
   description: descriptionField.default(''),
+  visibility: visibilityField.default('private'),
 });
 
 export const updateCollectionBody = z
   .object({
     name: nameField.optional(),
     description: descriptionField.optional(),
-    visibility: z.enum(['private', 'public'], { error: 'Choose public or private.' }).optional(),
+    visibility: visibilityField.optional(),
   })
   .refine((body) => Object.values(body).some((value) => value !== undefined), {
     message: 'Nothing to update.',

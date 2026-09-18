@@ -36,6 +36,15 @@ describe('visibility', () => {
     expect(res.body.collection.visibility).toBe('public');
   });
 
+  it('can create a board as public from the start', async () => {
+    const owner = await registerUser(app);
+    const res = await owner.agent
+      .post('/api/collections')
+      .send({ name: 'Open from day one', visibility: 'public' });
+    expect(res.status).toBe(201);
+    expect(res.body.collection.visibility).toBe('public');
+  });
+
   it('rejects an unknown visibility', async () => {
     const owner = await registerUser(app);
     const id = await boardWithImage(owner.agent, 'Coast');

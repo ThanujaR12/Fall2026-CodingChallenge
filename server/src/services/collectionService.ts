@@ -37,7 +37,7 @@ function nameTaken(): AppError {
 
 export async function createCollection(
   ownerId: Types.ObjectId,
-  input: { name: string; description: string },
+  input: { name: string; description: string; visibility?: 'private' | 'public' },
 ) {
   const nameKey = toNameKey(input.name);
   // Friendly pre-check; the unique index still guards against two requests racing.
@@ -48,6 +48,7 @@ export async function createCollection(
     name: input.name,
     nameKey,
     description: input.description,
+    visibility: input.visibility ?? 'private',
   });
   return { collection, stats: { ...emptyStats, palette: [] } };
 }

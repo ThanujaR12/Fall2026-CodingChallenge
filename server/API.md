@@ -347,6 +347,7 @@ Creates a collection.
   - `name` (required): 1–60 characters after trimming; must not match another of your collections
     (ignoring case and surrounding spaces)
   - `description` (optional): up to 280 characters, default `""`
+  - `visibility` (optional): `"private"` (default) or `"public"` (listed on Explore once it has images)
 - **Response 201**: `{ "collection": CollectionSummary }` (with `itemCount: 0` and null cover fields)
 - **Errors**: `400 VALIDATION_ERROR` (with `fields.name` / `fields.description`),
   `409 COLLECTION_NAME_TAKEN`
