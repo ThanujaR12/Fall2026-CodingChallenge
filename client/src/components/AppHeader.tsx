@@ -1,44 +1,36 @@
-// Top navigation: logo, Home, Search and My collections, and the account menu (or Log in).
-import { Link, NavLink } from 'react-router';
+// Top bar: the full logo (hidden while the sidebar shows its icon) and the account menu (or Log in).
+import { Link } from 'react-router';
 import { SignOut } from '@phosphor-icons/react';
 import { PageContainer } from '@/components/PageContainer';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAuth } from '@/features/auth/useAuth';
+import { useSidebar } from '@/features/navigation/useSidebar';
 import { Logo } from './Logo';
 import { cn } from '@/lib/utils';
 
-const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-  cn(
-    'inline-flex min-h-11 items-center text-[15px] hover:text-accent-deep md:min-h-9',
-    isActive ? 'text-accent-deep' : 'text-ink',
-  );
-
 export function AppHeader() {
   const { user, status, logout } = useAuth();
+  const sidebar = useSidebar();
+  const signedIn = status === 'signedIn' && Boolean(user);
 
   return (
     <header className="border-b border-divider md:border-b-0">
-      <PageContainer className="flex min-h-[56px] items-center justify-between gap-3">
+      <PageContainer className="flex min-h-[56px] max-w-[1800px] items-center justify-between gap-3">
         <Link
           to={user ? '/' : '/login'}
-          className="inline-flex min-h-11 items-center text-[18px] text-ink"
+          className={cn(
+            'inline-flex min-h-11 items-center text-[18px] text-ink transition-opacity duration-300 motion-reduce:transition-none',
+            // While the sidebar is out it carries the logo icon, so the full logo steps aside.
+            signedIn && sidebar.open && 'md:pointer-events-none md:opacity-0',
+          )}
+          tabIndex={signedIn && sidebar.open ? -1 : undefined}
         >
           <Logo markClassName="size-[22px]" />
         </Link>
 
         {status === 'signedIn' && user ? (
-          <nav aria-label="Main" className="flex items-center gap-4 md:gap-5">
-            <NavLink to="/" end className={navLinkClass}>
-              Home
-            </NavLink>
-            <NavLink to="/search" className={navLinkClass}>
-              Search
-            </NavLink>
-            <NavLink to="/collections" className={navLinkClass}>
-              <span className="md:hidden">Boards</span>
-              <span className="hidden md:inline">My collections</span>
-            </NavLink>
+          <div className="flex items-center">
             <Popover>
               <PopoverTrigger
                 aria-label={`Account: ${user.username}`}
@@ -57,7 +49,7 @@ export function AppHeader() {
                 </Button>
               </PopoverContent>
             </Popover>
-          </nav>
+          </div>
         ) : status === 'signedOut' ? (
           <Link to="/login" className={buttonVariants({ variant: 'secondary' })}>
             Log in
