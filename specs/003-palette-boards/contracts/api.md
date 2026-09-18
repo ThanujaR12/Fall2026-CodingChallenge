@@ -7,6 +7,8 @@ The full, authoritative reference (request/response shapes, errors, curl example
 |---------------|------|---------|
 | `GET /feed?topic=&color=&page=` | none | Home feed: popular photos per topic, optional colour |
 | `GET /search/images?q=&color=&page=` | none | Adds the optional `color` filter |
+| `GET /photos/:sourceId` | none | One photo with a large version and its colours |
+| `GET /photos/:sourceId/similar?by=&page=` | none | "More like this" by `subject` or `color` |
 | `GET /explore?color=&page=` | none | Public, non-empty boards; optional colour filter |
 | `GET /explore/:id` | none | Read-only public board (`404 BOARD_NOT_PUBLIC` if private) |
 | `POST /collections` | token | Adds optional `visibility` (default `private`) |

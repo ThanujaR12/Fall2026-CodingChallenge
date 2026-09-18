@@ -243,6 +243,32 @@ Popular photos for the home feed, no keyword needed (safe search on, 20 per page
 curl "http://localhost:4000/api/feed?topic=nature&page=1"
 ```
 
+## Photos
+
+A single Pixabay photo's page and photos like it. No sign-in needed.
+
+### `GET /photos/:sourceId`
+
+- **Response 200**: `{ "photo": SearchResult & { "largeUrl": string }, "palette": ["#RRGGBB", …] }`
+  (up to 5 colours read from the photo's preview, cached for a day; `[]` if they can't be read)
+- **Errors**: `400 VALIDATION_ERROR` (not a numeric id), `404 IMAGE_NOT_FOUND`,
+  `502 IMAGE_SOURCE_UNAVAILABLE`
+
+### `GET /photos/:sourceId/similar?by=&page=`
+
+"More like this". `by=subject` (default) searches the photo's two main tags (widening to one if that
+finds fewer than 20); `by=color` searches its main tag in the named colour nearest its leading colour.
+The photo itself is left out.
+
+- **Query**: `by` (`subject` | `color`), `page` (1–25, default 1)
+- **Response 200**: the same shape as `GET /search/images`, plus `"by"`, `"basedOn": ["lighthouse"]`,
+  and `"color": "blue" | null`
+- **Errors**: `400 VALIDATION_ERROR`, `404 IMAGE_NOT_FOUND`, `502 IMAGE_SOURCE_UNAVAILABLE`
+
+```bash
+curl "http://localhost:4000/api/photos/736877/similar?by=color"
+```
+
 ## Search
 
 ### `GET /search/images?q=&color=&page=`

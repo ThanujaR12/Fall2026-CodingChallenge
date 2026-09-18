@@ -91,6 +91,16 @@ export type Visibility = 'private' | 'public';
 
 export type RecommendationsResponse = SearchResponse & { basedOn: string[] };
 
+export type SimilarBy = 'subject' | 'color';
+
+export type PhotoResponse = { photo: SearchResult & { largeUrl: string }; palette: string[] };
+
+export type SimilarResponse = SearchResponse & {
+  by: SimilarBy;
+  basedOn: string[];
+  color: string | null;
+};
+
 export type BoardActivityEntry = {
   id: string;
   type: 'item_added' | 'item_edited' | 'item_removed' | 'member_invited';

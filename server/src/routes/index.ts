@@ -6,6 +6,7 @@ import { collectionRoutes } from './collectionRoutes.js';
 import { exploreRoutes } from './exploreRoutes.js';
 import { feedRoutes } from './feedRoutes.js';
 import { notificationRoutes } from './notificationRoutes.js';
+import { photoRoutes } from './photoRoutes.js';
 import { imageRoutes } from './imageRoutes.js';
 import { searchRoutes } from './searchRoutes.js';
 import { sharedRoutes } from './sharedRoutes.js';
@@ -19,6 +20,7 @@ routes.get('/health', (_req, res) => {
 routes.use('/auth', authRoutes);
 routes.use('/search', searchRoutes);
 routes.use('/feed', feedRoutes);
+routes.use('/photos', photoRoutes);
 routes.use('/collections', requireAuth, collectionRoutes);
 routes.use('/notifications', requireAuth, notificationRoutes);
 // Share links and image bytes must work for signed-out visitors.

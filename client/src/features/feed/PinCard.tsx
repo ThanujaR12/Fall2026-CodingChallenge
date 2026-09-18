@@ -1,5 +1,7 @@
-// One photo tile in the feed: rounded image, Save and "Pixabay" on hover or focus, title and credit below.
+// One photo tile in the feed: rounded image (opens the photo's page), Save and "Pixabay" on hover
+// or focus, title and credit below.
 import { useState, type ReactNode } from 'react';
+import { Link } from 'react-router';
 import { ArrowUpRight } from '@phosphor-icons/react';
 import { ImageCredit } from '@/components/ImageCredit';
 import type { SearchResult } from '@/types/api';
@@ -33,14 +35,22 @@ export function PinCard({ result, imageHeight, renderSaveAction }: PinCardProps)
             image unavailable
           </span>
         ) : (
-          <img
-            src={result.thumbnailUrl}
-            alt={result.title}
-            loading="lazy"
-            decoding="async"
-            onError={() => setFailed(true)}
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-          />
+          // The whole photo opens its page (details, colours, and more like it).
+          <Link
+            to={`/photo/${result.sourceId}`}
+            state={{ photo: result }}
+            aria-label={`Open “${result.title}”`}
+            className="absolute inset-0 block focus-visible:outline-offset-[-3px]"
+          >
+            <img
+              src={result.thumbnailUrl}
+              alt={result.title}
+              loading="lazy"
+              decoding="async"
+              onError={() => setFailed(true)}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+            />
+          </Link>
         )}
         {/* Darkens the photo on hover so the white controls stay readable. */}
         <div

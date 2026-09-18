@@ -149,6 +149,19 @@ As a collector, my boards are one tap away on Home, and the app suggests photos 
 3. **Given** I can edit the board, **When** I tap Add on an idea, **Then** it is saved to that board
    at once ("Added"), rolling back if refused; viewers get the regular Save menu instead.
 
+### User Story 11 - Photo page with "More like this" (Priority: P2)
+
+As a browser, I click any photo to see it large, its colours, and photos like it.
+
+**Acceptance Scenarios**:
+
+1. **Given** any photo tile in a feed, **When** I click it, **Then** its page opens at once with the
+   large photo, its colours (click to copy), title, credit, tags (each a search), and Save.
+2. **Given** the photo page, **When** I look at "More like this", **Then** I see photos with the same
+   subject; switching to "Same colours" shows its main subject in its leading colour.
+3. **Given** a similar photo, **When** I click it, **Then** its own page opens at the top.
+4. A "Mostly <colour>" card links to more photos in that colour on Palettes.
+
 ### Edge Cases
 
 - An image whose colors can't be read still saves; its board simply has fewer colors.
@@ -181,6 +194,8 @@ As a collector, my boards are one tap away on Home, and the app suggests photos 
 - **FR-014**: Home MUST list the user's boards (owned, and shared as editor) in the chip row, and
   every board MUST offer recommended photos based on its specific tags (or name), excluding photos
   already on it, with one-tap Add for editors.
+- **FR-015**: Every photo tile MUST open a photo page with its colours and "More like this",
+  switchable between the same subject and the same colours.
 
 ### Key Entities
 

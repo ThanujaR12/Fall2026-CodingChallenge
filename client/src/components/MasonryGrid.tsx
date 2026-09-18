@@ -49,7 +49,16 @@ export function MasonryGrid<T>({
   const columnWidth = width > 0 ? (width - gap * (columns - 1)) / columns : 0;
   const heights = new Array<number>(columns).fill(0);
 
-  const placed = items.map((item) => {
+  // Paged sources can repeat a photo across pages; show each one once.
+  const seen = new Set<string>();
+  const unique = items.filter((item) => {
+    const key = getKey(item);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  const placed = unique.map((item) => {
     // Clamp very tall or very wide photos so no single tile dominates the board.
     const ratio = Math.min(Math.max(getRatio(item) || 1, 0.6), 1.8);
     const imageHeight = Math.round(columnWidth * ratio);

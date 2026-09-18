@@ -64,6 +64,11 @@ against a throwaway in-memory copy of the app (screenshots and scripted checks).
 - [X] T023 [US10] `GET /api/collections/:id/recommendations` (top specific tags, widening, name fallback, excludes saved photos); tests; API.md
 - [X] T024 [US10] Board chips after "All" on Home with "Ideas for <board>"; "More ideas for this board" on board pages; one-tap optimistic Add
 
+## Phase 7c: Photo page and "More like this" (US11)
+
+- [X] T025 [US11] `GET /api/photos/:sourceId` (with colours from the preview, cached) and `/similar?by=subject|color`; tests; API.md
+- [X] T026 [US11] Photo page: large image, colours, tags, Save, "Mostly <colour>" card, "More like this" with Same subject / Same colours; every feed tile opens it; grid drops repeated photos
+
 ## Phase 8: Polish
 
 - [ ] T021 README.txt: features tour, setup, live link
