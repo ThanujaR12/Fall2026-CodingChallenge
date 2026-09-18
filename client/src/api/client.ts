@@ -62,9 +62,40 @@ export function setUnauthenticatedHandler(handler: (() => void) | null): void {
   onUnauthenticated = handler;
 }
 
+// The free API host sleeps when idle, so the first request after a quiet spell can take up to a
+// minute. Requests slower than this count as "the server is waking up" and show a friendly note.
+const SLOW_REQUEST_MS = 5000;
+let slowRequests = 0;
+const slowListeners = new Set<() => void>();
+
+export function isServerSlow(): boolean {
+  return slowRequests > 0;
+}
+
+export function subscribeServerSlow(listener: () => void): () => void {
+  slowListeners.add(listener);
+  return () => slowListeners.delete(listener);
+}
+
+function changeSlowRequests(delta: number) {
+  const before = isServerSlow();
+  slowRequests += delta;
+  if (before !== isServerSlow()) slowListeners.forEach((listener) => listener());
+}
+
+/** Starts waking the API server as soon as the app opens, before the first real request. */
+export function wakeServer(): void {
+  void request('/health').catch(() => undefined);
+}
+
 export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = getToken();
   let res: Response;
+  let slow = false;
+  const slowTimer = setTimeout(() => {
+    slow = true;
+    changeSlowRequests(1);
+  }, SLOW_REQUEST_MS);
   try {
     res = await fetch(`${API_URL}${path}`, {
       ...init,
@@ -80,6 +111,9 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
       'NETWORK_ERROR',
       "Can't reach the server. Check your connection and try again.",
     );
+  } finally {
+    clearTimeout(slowTimer);
+    if (slow) changeSlowRequests(-1);
   }
 
   if (res.status === 204) return undefined as T;
