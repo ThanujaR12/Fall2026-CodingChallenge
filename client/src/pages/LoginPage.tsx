@@ -1,6 +1,6 @@
 // Log in / Sign up screen (design 01): forms on the left, what the app does on the right.
 import { useEffect } from 'react';
-import { Navigate, useNavigate, useSearchParams } from 'react-router';
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
 import { MagnifyingGlass, Palette, UsersThree } from '@phosphor-icons/react';
 import { hasSignedInBefore } from '@/api/client';
 import { GoogleButton } from '@/features/auth/GoogleButton';
@@ -128,6 +128,15 @@ export function LoginPage() {
                 — it takes less than a minute.
               </>
             )}
+          </p>
+          <p className="mt-8 text-[12px] text-ink/60">
+            <Link to="/privacy" className="underline hover:text-ink">
+              Privacy
+            </Link>{' '}
+            ·{' '}
+            <Link to="/terms" className="underline hover:text-ink">
+              Terms
+            </Link>
           </p>
         </div>
       </main>

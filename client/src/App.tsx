@@ -18,6 +18,7 @@ import { PalettesPage } from '@/pages/PalettesPage';
 import { PhotoPage } from '@/pages/PhotoPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { VisualSearchPage } from '@/pages/VisualSearchPage';
+import { LegalPage } from '@/pages/LegalPage';
 import { SearchPage } from '@/pages/SearchPage';
 import { SharedCollectionPage } from '@/pages/SharedCollectionPage';
 
@@ -46,6 +47,8 @@ export default function App() {
       <Route element={<Layout />}>
         <Route path="s/:token" element={<SharedCollectionPage />} />
         {/* Explore and public boards are open to everyone, signed in or not. */}
+        <Route path="privacy" element={<LegalPage kind="privacy" />} />
+        <Route path="terms" element={<LegalPage kind="terms" />} />
         <Route path="explore" element={<ExplorePage />} />
         <Route path="explore/:id" element={<SharedCollectionPage source="public" />} />
         <Route element={<RequireAuth />}>
