@@ -4,6 +4,8 @@ import type { ApiErrorBody } from '@/types/api';
 export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api';
 
 const TOKEN_KEY = 'pixboard.token';
+// Remembers (even after logging out) that someone has signed in on this device before.
+const RETURNING_KEY = 'pixboard.hasSignedIn';
 
 export class ApiError extends Error {
   status: number;
@@ -31,8 +33,18 @@ export function getToken(): string | null {
 export function setToken(token: string): void {
   try {
     localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(RETURNING_KEY, '1');
   } catch {
     // Signed in for this tab only.
+  }
+}
+
+/** True once someone has signed in on this device, so the sign-in page can say "Welcome back". */
+export function hasSignedInBefore(): boolean {
+  try {
+    return localStorage.getItem(RETURNING_KEY) === '1';
+  } catch {
+    return false;
   }
 }
 

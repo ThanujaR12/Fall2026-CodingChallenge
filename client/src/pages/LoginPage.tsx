@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router';
 import { MagnifyingGlass, Palette, UsersThree } from '@phosphor-icons/react';
+import { hasSignedInBefore } from '@/api/client';
 import { GoogleButton } from '@/features/auth/GoogleButton';
 import { LoginForm } from '@/features/auth/LoginForm';
 import { SignupForm } from '@/features/auth/SignupForm';
@@ -63,7 +64,13 @@ export function LoginPage() {
               </>
             ) : (
               <>
-                Welcome <span className="text-brand">back.</span>
+                {/* New visitors get a plain welcome; people who've signed in here before, "back". */}
+                Welcome{' '}
+                {hasSignedInBefore() ? (
+                  <span className="text-brand">back.</span>
+                ) : (
+                  <span className="text-brand">to PaletteBoard.</span>
+                )}
               </>
             )}
           </h1>
