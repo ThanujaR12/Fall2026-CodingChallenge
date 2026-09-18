@@ -1,4 +1,4 @@
-// My collections screen: title, totals, New collection button, and the collection grid.
+// My collections screen: your collections, then the ones shared with you.
 import { useEffect } from 'react';
 import { Plus, SquaresFour } from '@phosphor-icons/react';
 import { EmptyState } from '@/components/EmptyState';
@@ -30,7 +30,8 @@ export function CollectionsPage() {
     />
   );
 
-  const list = collections.data ?? [];
+  const list = collections.data?.collections ?? [];
+  const shared = collections.data?.shared ?? [];
   const totalImages = list.reduce((sum, c) => sum + c.itemCount, 0);
 
   return (
@@ -56,15 +57,31 @@ export function CollectionsPage() {
           onRetry={() => collections.refetch()}
           isRetrying={collections.isRefetching}
         />
-      ) : list.length === 0 ? (
-        <EmptyState
-          icon={<SquaresFour size={34} weight="duotone" />}
-          title="No collections yet"
-          body="Create your first collection to start saving images."
-          action={newCollectionButton}
-        />
       ) : (
-        <CollectionGrid collections={list} />
+        <>
+          {list.length === 0 ? (
+            <EmptyState
+              icon={<SquaresFour size={34} weight="duotone" />}
+              title="No collections yet"
+              body="Create your first collection to start saving images."
+              action={newCollectionButton}
+            />
+          ) : (
+            <CollectionGrid collections={list} />
+          )}
+
+          {shared.length > 0 && (
+            <section aria-labelledby="shared-heading" className="mt-14">
+              <div className="mb-6 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <h2 id="shared-heading" className="text-[20px]">
+                  Shared with me
+                </h2>
+                <p className="text-[13px] text-ink/65">Boards other people invited you to</p>
+              </div>
+              <CollectionGrid collections={shared} />
+            </section>
+          )}
+        </>
       )}
     </PageContainer>
   );

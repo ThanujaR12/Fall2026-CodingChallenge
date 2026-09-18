@@ -2,10 +2,10 @@
 import { Check, CircleNotch } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { imageCount } from '@/lib/format';
-import type { CollectionSummary } from '@/types/api';
+import type { CollectionSummary, SharedCollectionSummary } from '@/types/api';
 
 type CollectionPickerRowProps = {
-  collection: CollectionSummary;
+  collection: CollectionSummary | SharedCollectionSummary;
   isSaving: boolean;
   disabled: boolean;
   onSave: () => void;
@@ -26,7 +26,10 @@ export function CollectionPickerRow({
     >
       <div className="min-w-0">
         <p className="truncate text-[15px]">{collection.name}</p>
-        <p className="text-[12px] text-ink/65">{imageCount(collection.itemCount)}</p>
+        <p className="text-[12px] text-ink/65">
+          {imageCount(collection.itemCount)}
+          {'owner' in collection && ` · shared by @${collection.owner.username}`}
+        </p>
       </div>
 
       {alreadySaved ? (

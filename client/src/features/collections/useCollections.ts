@@ -8,7 +8,7 @@ import {
   updateCollection,
 } from '@/api/collections';
 import { queryKeys } from '@/lib/queryKeys';
-import type { CollectionDetail, CollectionInput, CollectionSummary } from '@/types/api';
+import type { CollectionDetail, CollectionInput, CollectionsResponse } from '@/types/api';
 
 export function useCollections(sourceId?: string, options: { enabled?: boolean } = {}) {
   return useQuery({
@@ -32,8 +32,8 @@ export function useCreateCollection() {
     mutationFn: createCollection,
     onSuccess: (created) => {
       // Show the new collection first right away, then refresh every list from the server.
-      queryClient.setQueryData<CollectionSummary[]>(queryKeys.collections(), (current) =>
-        current ? [created, ...current] : current,
+      queryClient.setQueryData<CollectionsResponse>(queryKeys.collections(), (current) =>
+        current ? { ...current, collections: [created, ...current.collections] } : current,
       );
       void queryClient.invalidateQueries({ queryKey: ['collections'] });
     },

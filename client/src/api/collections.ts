@@ -1,11 +1,16 @@
 // HTTP calls for collections.
-import type { CollectionDetail, CollectionInput, CollectionSummary } from '@/types/api';
+import type {
+  CollectionDetail,
+  CollectionInput,
+  CollectionSummary,
+  CollectionsResponse,
+} from '@/types/api';
 import { request } from './client';
 
-export async function listCollections(sourceId?: string): Promise<CollectionSummary[]> {
+/** Your own collections plus the ones shared with you. */
+export function listCollections(sourceId?: string): Promise<CollectionsResponse> {
   const query = sourceId ? `?${new URLSearchParams({ sourceId })}` : '';
-  const body = await request<{ collections: CollectionSummary[] }>(`/collections${query}`);
-  return body.collections;
+  return request<CollectionsResponse>(`/collections${query}`);
 }
 
 export async function createCollection(input: CollectionInput): Promise<CollectionSummary> {

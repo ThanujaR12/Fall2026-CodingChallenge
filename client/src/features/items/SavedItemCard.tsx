@@ -8,10 +8,11 @@ import type { SavedItem } from '@/types/api';
 type SavedItemCardProps = {
   item: SavedItem;
   isSelected?: boolean;
+  myUserId?: string;
   onOpen: (item: SavedItem) => void;
 };
 
-export function SavedItemCard({ item, isSelected = false, onOpen }: SavedItemCardProps) {
+export function SavedItemCard({ item, isSelected = false, myUserId, onOpen }: SavedItemCardProps) {
   return (
     <article className="flex min-w-0 flex-col">
       <button
@@ -30,6 +31,11 @@ export function SavedItemCard({ item, isSelected = false, onOpen }: SavedItemCar
       </button>
       {/* Outside the button so the link is not nested inside another control. */}
       <ImageCredit creatorName={item.creatorName} pageUrl={item.pageUrl} />
+      {item.addedBy && (
+        <p className="text-[12px] text-ink/65">
+          added by {item.addedBy.id === myUserId ? 'you' : `@${item.addedBy.username}`}
+        </p>
+      )}
     </article>
   );
 }

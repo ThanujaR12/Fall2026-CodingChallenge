@@ -1,12 +1,17 @@
-// Unboxed board card: cover photo with its credit, then name, description, and counts.
+// Unboxed board card: cover photo with its credit, then name, description, counts, and sharing.
 import { Link } from 'react-router';
 import { assetUrl } from '@/api/client';
 import { ImageCredit } from '@/components/ImageCredit';
 import { LazyImage } from '@/components/LazyImage';
 import { imageCount, updatedAgo } from '@/lib/format';
-import type { CollectionSummary } from '@/types/api';
+import type { CollectionSummary, SharedCollectionSummary } from '@/types/api';
 
-export function CollectionCard({ collection }: { collection: CollectionSummary }) {
+type CollectionCardProps = { collection: CollectionSummary | SharedCollectionSummary };
+
+export function CollectionCard({ collection }: CollectionCardProps) {
+  // Shared collections also say who owns them and your role.
+  const shared = 'owner' in collection ? collection : null;
+
   return (
     <article className="flex flex-col">
       <Link
@@ -36,6 +41,14 @@ export function CollectionCard({ collection }: { collection: CollectionSummary }
       <p className="mt-1 text-[13px] text-ink/65">
         {imageCount(collection.itemCount)} · {updatedAgo(collection.updatedAt)}
       </p>
+      {shared && (
+        <p className="mt-0.5 text-[13px] text-ink/65">
+          by @{shared.owner.username} ·{' '}
+          <span className="tag bg-accent-tint text-accent-deep">
+            {shared.role === 'editor' ? 'Editor' : 'Viewer'}
+          </span>
+        </p>
+      )}
       {/* Credit sits outside the card link so links are never nested. */}
       {collection.coverCreatorName && collection.coverPageUrl && (
         <ImageCredit

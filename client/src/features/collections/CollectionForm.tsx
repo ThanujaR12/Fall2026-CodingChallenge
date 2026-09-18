@@ -16,6 +16,8 @@ type CollectionFormProps = {
   onCancel: () => void;
   isPending: boolean;
   error?: unknown;
+  /** Editors may change the description but not the name. */
+  nameReadOnly?: boolean;
 };
 
 type FieldErrors = { name?: string; description?: string };
@@ -45,6 +47,7 @@ export function CollectionForm({
   onCancel,
   isPending,
   error,
+  nameReadOnly = false,
 }: CollectionFormProps) {
   const [values, setValues] = useState(initialValues);
   const [localErrors, setLocalErrors] = useState<FieldErrors>({});
@@ -68,7 +71,8 @@ export function CollectionForm({
           id="collection-name"
           value={values.name}
           maxLength={NAME_MAX}
-          autoFocus
+          autoFocus={!nameReadOnly}
+          readOnly={nameReadOnly}
           required
           aria-invalid={Boolean(errors.name)}
           aria-describedby={errors.name ? 'collection-name-error' : undefined}
@@ -77,6 +81,9 @@ export function CollectionForm({
             setLocalErrors({ ...localErrors, name: undefined });
           }}
         />
+        {nameReadOnly && (
+          <p className="text-[12px] text-ink/65">Only the owner can rename this collection.</p>
+        )}
         {errors.name && (
           <p id="collection-name-error" className="text-[13px] text-accent2-deep">
             {errors.name}

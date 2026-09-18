@@ -13,7 +13,10 @@ import { CollectionHeader } from '@/features/collections/CollectionHeader';
 import { DeleteCollectionDialog } from '@/features/collections/DeleteCollectionDialog';
 import { EditCollectionDialog } from '@/features/collections/EditCollectionDialog';
 import { useCollection } from '@/features/collections/useCollections';
+import { useAuth } from '@/features/auth/useAuth';
 import { ItemDetailPanel } from '@/features/items/ItemDetailPanel';
+import { MembersDialog } from '@/features/sharing/MembersDialog';
+import { ShareDialog } from '@/features/sharing/ShareDialog';
 import { SavedItemGrid } from '@/features/items/SavedItemGrid';
 import { APP_NAME } from '@/lib/constants';
 
@@ -21,6 +24,8 @@ export function CollectionPage() {
   const { id = '' } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const collection = useCollection(id);
+  const { user } = useAuth();
+  const myUserId = user?.id ?? '';
   const name = collection.data?.name;
 
   // The open item lives in the URL so reloads keep it and browser Back closes it.
@@ -62,7 +67,7 @@ export function CollectionPage() {
           <EmptyState
             icon={<SquaresFour size={34} weight="duotone" />}
             title="Collection not found"
-            body="It may have been deleted, or the link is wrong."
+            body="It may have been deleted, or you no longer have access to it."
             action={
               <Link to="/collections" className={buttonVariants({ variant: 'primary' })}>
                 Go to My collections
@@ -82,15 +87,29 @@ export function CollectionPage() {
   }
 
   const data = collection.data;
+  const isOwner = data.role === 'owner';
+  const canEdit = data.role === 'owner' || data.role === 'editor';
 
   return (
     <PageContainer className="pt-6 md:pt-10">
       <CollectionHeader
         collection={data}
+        sharedAs={
+          isOwner
+            ? undefined
+            : { owner: data.owner.username, role: data.role as 'editor' | 'viewer' }
+        }
         actions={
           <>
-            <EditCollectionDialog collection={data} />
-            <DeleteCollectionDialog collection={data} />
+            {canEdit && <EditCollectionDialog collection={data} canRename={isOwner} />}
+            {isOwner ? (
+              <>
+                <ShareDialog collection={data} myUserId={myUserId} />
+                <DeleteCollectionDialog collection={data} />
+              </>
+            ) : (
+              <MembersDialog collection={data} myUserId={myUserId} />
+            )}
           </>
         }
       />
@@ -99,11 +118,17 @@ export function CollectionPage() {
         <EmptyState
           icon={<Images size={34} weight="duotone" />}
           title="Nothing saved here yet"
-          body={`Find images worth keeping and save them to ${data.name}.`}
+          body={
+            canEdit
+              ? `Find images worth keeping and save them to ${data.name}.`
+              : 'The owner and editors haven’t saved anything yet.'
+          }
           action={
-            <Link to="/search" className={buttonVariants({ variant: 'primary' })}>
-              Search images
-            </Link>
+            canEdit ? (
+              <Link to="/search" className={buttonVariants({ variant: 'primary' })}>
+                Search images
+              </Link>
+            ) : undefined
           }
         />
       ) : (
@@ -112,12 +137,14 @@ export function CollectionPage() {
           <SavedItemGrid
             items={data.items}
             selectedId={selectedItem?.id}
+            myUserId={myUserId}
             onOpen={(item) => openItem(item.id)}
           />
           <ItemDetailPanel
             collectionId={data.id}
             collectionName={data.name}
             item={selectedItem}
+            canEdit={canEdit}
             onClose={closeItem}
           />
         </div>

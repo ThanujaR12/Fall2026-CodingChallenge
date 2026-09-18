@@ -16,6 +16,12 @@ give them your own titles and notes, and find them again later.
   - See your collections with cover photos, image counts, and photo credits
   - Open a saved image to see it larger, edit its title and note, or remove it
   - Rename or delete collections (deleting asks for confirmation)
+  - Accounts: sign up, log in with username or email, stay signed in for 7 days
+  - Share a read-only link to any collection (no account needed to view), and turn
+    it off at any time - the old link stops working immediately
+  - Invite other users as editors (add, edit, remove images) or viewers (look only);
+    change their roles, remove them, or let them leave; see who added each image
+  - Every permission is enforced by the server, not just hidden in the page
   - Works on phones (375px wide) through desktop
 
 The display name "Palette Boards" comes from the design mockups; change APP_NAME in
@@ -66,6 +72,9 @@ Commands are one per line so they work in bash, zsh, cmd, and Windows PowerShell
    Open server/.env and fill in:
        MONGODB_URI=<your Atlas connection string>
        PIXABAY_API_KEY=<your Pixabay key>
+       JWT_SECRET=<any long random string, at least 16 characters>
+   To generate a JWT_SECRET, run:
+       node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
    Leave PORT=4000 and CLIENT_ORIGIN=http://localhost:5173 as they are.
 
    npm run dev
@@ -81,7 +90,10 @@ Commands are one per line so they work in bash, zsh, cmd, and Windows PowerShell
        (on Windows cmd or PowerShell use:  copy .env.example .env)
    npm run dev
 
-   Open http://localhost:5173 in your browser.
+   Open http://localhost:5173 in your browser and click "Sign up" to create an
+   account. (The very first account also receives any collections that were
+   created before accounts existed.) To try collaboration, sign up a second
+   account in a private window and invite it from a collection's Share button.
 
 Quick check that the API is up:  http://localhost:4000/api/health  shows {"status":"ok"}
 
@@ -89,7 +101,7 @@ Quick check that the API is up:  http://localhost:4000/api/health  shows {"statu
 TESTS AND CODE CHECKS
 ---------------------
 In server/:
-   npm test               (65 tests; no API keys needed, uses an in-memory database)
+   npm test               (136 tests; no API keys needed, uses an in-memory database)
    npm run lint
    npm run format:check
 

@@ -15,7 +15,9 @@ import type { CollectionSummary } from '@/types/api';
 import { CollectionForm } from './CollectionForm';
 import { useUpdateCollection } from './useCollections';
 
-export function EditCollectionDialog({ collection }: { collection: CollectionSummary }) {
+type EditCollectionDialogProps = { collection: CollectionSummary; canRename: boolean };
+
+export function EditCollectionDialog({ collection, canRename }: EditCollectionDialogProps) {
   const [open, setOpen] = useState(false);
   const update = useUpdateCollection(collection.id);
 
@@ -43,9 +45,10 @@ export function EditCollectionDialog({ collection }: { collection: CollectionSum
             submitLabel="Save changes"
             isPending={update.isPending}
             error={update.error}
+            nameReadOnly={!canRename}
             onCancel={() => handleOpenChange(false)}
             onSubmit={(values) =>
-              update.mutate(values, {
+              update.mutate(canRename ? values : { description: values.description }, {
                 onSuccess: () => {
                   handleOpenChange(false);
                   toast.success('Collection updated');

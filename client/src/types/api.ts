@@ -46,11 +46,42 @@ export type SavedItem = {
   imageUrl: string;
   width: number;
   height: number;
+  /** Who saved it (null only for very old data). */
+  addedBy: PublicUser | null;
   createdAt: string;
   updatedAt: string;
 };
 
-export type CollectionDetail = CollectionSummary & { items: SavedItem[] };
+export type PublicUser = { id: string; username: string };
+
+export type AuthUser = PublicUser & { email: string };
+
+export type AuthResponse = { token: string; user: AuthUser };
+
+export type Role = 'owner' | 'editor' | 'viewer';
+
+export type MemberRole = 'editor' | 'viewer';
+
+export type Member = { user: PublicUser; role: MemberRole };
+
+export type SharedCollectionSummary = CollectionSummary & { owner: PublicUser; role: MemberRole };
+
+export type CollectionsResponse = {
+  collections: CollectionSummary[];
+  shared: SharedCollectionSummary[];
+};
+
+export type CollectionDetail = CollectionSummary & {
+  items: SavedItem[];
+  role: Role;
+  owner: PublicUser;
+  members: Member[];
+  /** Only filled in for the owner. */
+  shareToken: string | null;
+};
+
+/** What anyone with a share link sees. */
+export type SharedView = CollectionSummary & { owner: PublicUser; items: SavedItem[] };
 
 export type CollectionInput = { name: string; description: string };
 

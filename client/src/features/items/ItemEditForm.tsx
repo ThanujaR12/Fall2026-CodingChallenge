@@ -11,9 +11,9 @@ import { NOTE_MAX, TITLE_MAX } from '@/lib/constants';
 import type { SavedItem } from '@/types/api';
 import { useUpdateItem } from './useItems';
 
-type ItemEditFormProps = { item: SavedItem };
+type ItemEditFormProps = { item: SavedItem; canEdit: boolean };
 
-export function ItemEditForm({ item }: ItemEditFormProps) {
+export function ItemEditForm({ item, canEdit }: ItemEditFormProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(item.title);
   const [note, setNote] = useState(item.note);
@@ -60,10 +60,12 @@ export function ItemEditForm({ item }: ItemEditFormProps) {
       <div className="grid gap-2">
         <div className="flex items-start justify-between gap-3">
           <h2 className="text-[20px] break-words">{item.title}</h2>
-          <Button variant="ghost" size="sm" onClick={startEditing} className="-mr-2 shrink-0">
-            <PencilSimple size={16} />
-            Edit
-          </Button>
+          {canEdit && (
+            <Button variant="ghost" size="sm" onClick={startEditing} className="-mr-2 shrink-0">
+              <PencilSimple size={16} />
+              Edit
+            </Button>
+          )}
         </div>
         {item.note ? (
           <p className="text-[14px] whitespace-pre-line text-ink/80">{item.note}</p>

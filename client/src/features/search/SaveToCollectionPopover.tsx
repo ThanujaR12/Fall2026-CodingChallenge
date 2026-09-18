@@ -68,7 +68,11 @@ export function SaveToCollectionPopover({ result }: { result: SearchResult }) {
     if (!next) setCreateError(undefined);
   }
 
-  const list = collections.data ?? [];
+  // Your own collections, then shared ones you can edit (viewers can't save).
+  const list = [
+    ...(collections.data?.collections ?? []),
+    ...(collections.data?.shared ?? []).filter((c) => c.role === 'editor'),
+  ];
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>

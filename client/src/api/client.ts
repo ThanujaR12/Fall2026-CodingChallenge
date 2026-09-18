@@ -1,7 +1,9 @@
-// The single fetch wrapper: JSON in/out, and every failure turned into an ApiError with a code.
+// The single fetch wrapper: JSON in/out, the sign-in token, and every failure turned into an ApiError.
 import type { ApiErrorBody } from '@/types/api';
 
 export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api';
+
+const TOKEN_KEY = 'pixboard.token';
 
 export class ApiError extends Error {
   status: number;
@@ -17,12 +19,48 @@ export class ApiError extends Error {
   }
 }
 
+// Storage can be unavailable (private mode, blocked site data), so every access is guarded.
+export function getToken(): string | null {
+  try {
+    return localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setToken(token: string): void {
+  try {
+    localStorage.setItem(TOKEN_KEY, token);
+  } catch {
+    // Signed in for this tab only.
+  }
+}
+
+export function clearToken(): void {
+  try {
+    localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    // Nothing stored.
+  }
+}
+
+// Set by the auth provider: what to do when the server says the session is over.
+let onUnauthenticated: (() => void) | null = null;
+export function setUnauthenticatedHandler(handler: (() => void) | null): void {
+  onUnauthenticated = handler;
+}
+
 export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const token = getToken();
   let res: Response;
   try {
     res = await fetch(`${API_URL}${path}`, {
       ...init,
-      headers: { 'Content-Type': 'application/json', ...init.headers },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...init.headers,
+      },
     });
   } catch {
     throw new ApiError(
@@ -37,12 +75,18 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
   const body: unknown = await res.json().catch(() => null);
   if (!res.ok) {
     const error = (body as ApiErrorBody | null)?.error;
-    throw new ApiError(
+    const apiError = new ApiError(
       res.status,
       error?.code ?? 'UNKNOWN_ERROR',
       error?.message ?? 'Something went wrong. Please try again.',
       error?.fields,
     );
+    // An expired or missing session sends the user to sign in (login failures are shown inline).
+    if (apiError.code === 'UNAUTHENTICATED' && token) {
+      clearToken();
+      onUnauthenticated?.();
+    }
+    throw apiError;
   }
   return body as T;
 }

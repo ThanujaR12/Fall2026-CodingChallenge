@@ -17,12 +17,18 @@ type ItemDetailPanelProps = {
   collectionId: string;
   collectionName: string;
   item: SavedItem | null;
+  canEdit: boolean;
   onClose: () => void;
 };
 
-type ItemDetailsProps = { item: SavedItem; onRemove: () => void; isRemoving: boolean };
+type ItemDetailsProps = {
+  item: SavedItem;
+  canEdit: boolean;
+  onRemove: () => void;
+  isRemoving: boolean;
+};
 
-function ItemDetails({ item, onRemove, isRemoving }: ItemDetailsProps) {
+function ItemDetails({ item, canEdit, onRemove, isRemoving }: ItemDetailsProps) {
   return (
     <div className="grid gap-5">
       <LazyImage
@@ -33,7 +39,7 @@ function ItemDetails({ item, onRemove, isRemoving }: ItemDetailsProps) {
       />
 
       {/* key resets the form whenever a different image is opened. */}
-      <ItemEditForm key={item.id} item={item} />
+      <ItemEditForm key={item.id} item={item} canEdit={canEdit} />
 
       <div className="grid gap-3">
         {item.tags.length > 0 && (
@@ -47,7 +53,10 @@ function ItemDetails({ item, onRemove, isRemoving }: ItemDetailsProps) {
         )}
         <div>
           <ImageCredit creatorName={item.creatorName} pageUrl={item.pageUrl} />
-          <p className="text-[12px] text-ink/65">Saved {savedOn(item.createdAt)}</p>
+          <p className="text-[12px] text-ink/65">
+            Saved {savedOn(item.createdAt)}
+            {item.addedBy && ` by @${item.addedBy.username}`}
+          </p>
         </div>
         <a
           href={item.pageUrl}
@@ -60,17 +69,19 @@ function ItemDetails({ item, onRemove, isRemoving }: ItemDetailsProps) {
         </a>
       </div>
 
-      <div className="border-t border-divider pt-4">
-        <Button
-          variant="destructive-ghost"
-          className="-ml-3.5"
-          onClick={onRemove}
-          disabled={isRemoving}
-        >
-          <Trash size={16} />
-          Remove from collection
-        </Button>
-      </div>
+      {canEdit && (
+        <div className="border-t border-divider pt-4">
+          <Button
+            variant="destructive-ghost"
+            className="-ml-3.5"
+            onClick={onRemove}
+            disabled={isRemoving}
+          >
+            <Trash size={16} />
+            Remove from collection
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -79,6 +90,7 @@ export function ItemDetailPanel({
   collectionId,
   collectionName,
   item,
+  canEdit,
   onClose,
 }: ItemDetailPanelProps) {
   const isDesktop = useMediaQuery('(min-width: 1024px)');
@@ -129,7 +141,12 @@ export function ItemDetailPanel({
   }
 
   const details = item && (
-    <ItemDetails item={item} onRemove={handleRemove} isRemoving={remove.isPending} />
+    <ItemDetails
+      item={item}
+      canEdit={canEdit}
+      onRemove={handleRemove}
+      isRemoving={remove.isPending}
+    />
   );
 
   if (isDesktop) {
