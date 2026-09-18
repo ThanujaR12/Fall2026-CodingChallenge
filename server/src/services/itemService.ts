@@ -6,6 +6,7 @@ import { AppError } from '../utils/AppError.js';
 import { splitTags, titleFromTags } from '../utils/titleFromTags.js';
 import { removeOrphanAssets } from './assetService.js';
 import { touchCollection } from './collectionService.js';
+import { extractColors } from './paletteService.js';
 import { assertCan, resolveAccess } from './permissionService.js';
 import * as pixabay from './pixabayService.js';
 
@@ -27,6 +28,8 @@ async function findOrCreateAsset(hit: pixabay.PixabayHit) {
       data,
       contentType,
       byteLength: data.byteLength,
+      // Palette Boards: read the image's colors once, now, rather than on every page view.
+      colors: await extractColors(data),
       width: hit.webformatWidth,
       height: hit.webformatHeight,
     });

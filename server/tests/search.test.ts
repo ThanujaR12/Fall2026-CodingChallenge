@@ -15,7 +15,7 @@ describe('GET /api/search/images', () => {
     const res = await request(app).get('/api/search/images?q=fog');
 
     expect(res.status).toBe(200);
-    expect(pixabay.searchImages).toHaveBeenCalledWith('fog', 1);
+    expect(pixabay.searchImages).toHaveBeenCalledWith('fog', 1, undefined);
     expect(res.body).toMatchObject({ page: 1, perPage: 20, total: 500, hasMore: true });
     expect(res.body.results[0]).toEqual({
       sourceId: '101',
@@ -27,6 +27,18 @@ describe('GET /api/search/images', () => {
       width: 640,
       height: 427,
     });
+  });
+
+  it('passes a color filter through', async () => {
+    const res = await request(app).get('/api/search/images?q=fog&color=blue');
+    expect(res.status).toBe(200);
+    expect(pixabay.searchImages).toHaveBeenCalledWith('fog', 1, 'blue');
+  });
+
+  it('rejects an unknown color', async () => {
+    const res = await request(app).get('/api/search/images?q=fog&color=plaid');
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe('VALIDATION_ERROR');
   });
 
   it('reports no more pages on the last page', async () => {

@@ -5,6 +5,7 @@ import { Collection } from '../models/Collection.js';
 import { SavedItem } from '../models/SavedItem.js';
 import { AppError } from '../utils/AppError.js';
 import { removeOrphanAssets } from './assetService.js';
+import { palettesFor } from './paletteService.js';
 import { assertCan, resolveAccess } from './permissionService.js';
 
 export type CollectionStats = {
@@ -12,6 +13,8 @@ export type CollectionStats = {
   coverAsset: Types.ObjectId | null;
   coverCreatorName: string | null;
   coverPageUrl: string | null;
+  /** Up to five dominant colors merged from the collection's images. */
+  palette: string[];
   containsImage?: boolean;
 };
 
@@ -20,6 +23,7 @@ const emptyStats: CollectionStats = {
   coverAsset: null,
   coverCreatorName: null,
   coverPageUrl: null,
+  palette: [],
 };
 
 // Names are compared ignoring case and surrounding spaces.
@@ -45,11 +49,12 @@ export async function createCollection(
     nameKey,
     description: input.description,
   });
-  return { collection, stats: { ...emptyStats } };
+  return { collection, stats: { ...emptyStats, palette: [] } };
 }
 
-// Item count and newest item (the cover, with its credit) for each collection id.
+// Item count, newest item (the cover, with its credit), and palette for each collection id.
 async function statsFor(collectionIds: Types.ObjectId[]): Promise<Map<string, CollectionStats>> {
+  const palettes = await palettesFor(collectionIds);
   const rows = await SavedItem.aggregate<{
     _id: Types.ObjectId;
     itemCount: number;
@@ -78,6 +83,7 @@ async function statsFor(collectionIds: Types.ObjectId[]): Promise<Map<string, Co
         coverAsset: row.coverAsset,
         coverCreatorName: row.coverCreatorName,
         coverPageUrl: row.coverPageUrl,
+        palette: palettes.get(String(row._id)) ?? [],
       },
     ]),
   );
@@ -170,8 +176,9 @@ async function itemsWithStats(collectionId: Types.ObjectId) {
         coverAsset: newest.asset,
         coverCreatorName: newest.creatorName,
         coverPageUrl: newest.pageUrl,
+        palette: (await palettesFor([collectionId])).get(String(collectionId)) ?? [],
       }
-    : { ...emptyStats };
+    : { ...emptyStats, palette: [] };
   return { items, stats };
 }
 

@@ -5,8 +5,8 @@ import * as pixabay from '../services/pixabayService.js';
 import { toSearchResult } from '../utils/toDto.js';
 
 export async function searchImages(_req: Request, res: Response) {
-  const { q, page } = res.locals.query as SearchQuery;
-  const { hits, total } = await pixabay.searchImages(q, page);
+  const { q, color, page } = res.locals.query as SearchQuery;
+  const { hits, total } = await pixabay.searchImages(q, page, color);
 
   res.json({
     results: hits.map(toSearchResult),

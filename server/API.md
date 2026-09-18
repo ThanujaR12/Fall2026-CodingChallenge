@@ -73,6 +73,10 @@ every request: a member without permission gets `403 FORBIDDEN`; a non-member ge
 
 ## Shared types
 
+**Palettes**: each stored image's dominant colors are read once, when it is first saved, and kept
+with the image. A collection's `palette` merges its images' colors. Images saved before palettes
+existed get their colors filled in the next time a collection holding them is loaded.
+
 ```ts
 type SearchResult = {
   sourceId: string; // Pixabay image id
@@ -93,6 +97,7 @@ type CollectionSummary = {
   coverImageUrl: string | null; // "/api/images/<assetId>" of the newest item
   coverCreatorName: string | null;
   coverPageUrl: string | null;
+  palette: string[]; // up to 5 dominant colors ("#RRGGBB", most prominent first); [] when empty
   createdAt: string; // ISO 8601
   updatedAt: string;
   containsImage?: boolean; // only when ?sourceId= is given
@@ -214,7 +219,7 @@ curl http://localhost:4000/api/auth/me -H "Authorization: Bearer <token>"
 
 ## Feed
 
-### `GET /feed?topic=&page=`
+### `GET /feed?topic=&color=&page=`
 
 Popular photos for the home feed, no keyword needed (safe search on, 20 per page, cached 24 hours).
 
@@ -222,8 +227,10 @@ Popular photos for the home feed, no keyword needed (safe search on, 20 per page
 - **Query**:
   - `topic` (optional): one of `all` (editor's choice, the default), `nature`, `travel`, `food`,
     `fashion`, `animals`, `architecture`, `interiors`, `flowers`, `cozy`, `city`, `art`
+  - `color` (optional): one of `red`, `orange`, `yellow`, `green`, `turquoise`, `blue`, `lilac`,
+    `pink`, `brown`, `black`, `gray`, `white`, `grayscale` (with `all`, widens to all popular photos)
   - `page` (optional): integer ≥ 1, default `1`; `page × 20` must be ≤ 500
-- **Response 200**: the same shape as `GET /search/images`, plus `"topic": "all"`
+- **Response 200**: the same shape as `GET /search/images`, plus `"topic": "all"` and `"color": null` (or the color name)
 - **Errors**: `400 VALIDATION_ERROR` (unknown topic or unreachable page), `502 IMAGE_SOURCE_UNAVAILABLE`
 
 ```bash
@@ -232,7 +239,7 @@ curl "http://localhost:4000/api/feed?topic=nature&page=1"
 
 ## Search
 
-### `GET /search/images?q=&page=`
+### `GET /search/images?q=&color=&page=`
 
 Searches Pixabay photos (safe search on, 20 per page). Identical searches are cached for 24 hours,
 as Pixabay requires.
@@ -240,6 +247,7 @@ as Pixabay requires.
 - **Auth**: none
 - **Query**:
   - `q` (required): keyword, 1–100 characters after trimming
+  - `color` (optional): the same color names as `GET /feed`
   - `page` (optional): integer ≥ 1, default `1`; `page × 20` must be ≤ 500 (Pixabay's limit)
 - **Response 200**:
 
@@ -299,6 +307,7 @@ counts as an update.
         "coverImageUrl": "/api/images/66e8a2...",
         "coverCreatorName": "jplenio",
         "coverPageUrl": "https://pixabay.com/photos/lighthouse-736877/",
+        "palette": ["#2E3A40", "#C1663C", "#F3E3D3"],
         "createdAt": "2026-09-16T18:02:11.000Z",
         "updatedAt": "2026-09-16T18:10:45.000Z"
       }

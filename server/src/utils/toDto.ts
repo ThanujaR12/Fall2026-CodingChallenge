@@ -38,6 +38,7 @@ export function toCollectionSummary(collection: CollectionLike, stats: Collectio
     coverImageUrl: stats.coverAsset ? imageUrl(stats.coverAsset) : null,
     coverCreatorName: stats.coverAsset ? stats.coverCreatorName : null,
     coverPageUrl: stats.coverAsset ? stats.coverPageUrl : null,
+    palette: stats.palette ?? [],
     createdAt: collection.createdAt.toISOString(),
     updatedAt: collection.updatedAt.toISOString(),
   };

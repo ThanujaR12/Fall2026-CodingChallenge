@@ -14,7 +14,7 @@ describe('GET /api/feed', () => {
     const res = await request(app).get('/api/feed');
 
     expect(res.status).toBe(200);
-    expect(pixabay.browseImages).toHaveBeenCalledWith('all', 1);
+    expect(pixabay.browseImages).toHaveBeenCalledWith('all', 1, undefined);
     expect(res.body).toMatchObject({
       topic: 'all',
       page: 1,
@@ -30,8 +30,14 @@ describe('GET /api/feed', () => {
 
     const res = await request(app).get('/api/feed?topic=nature&page=3');
 
-    expect(pixabay.browseImages).toHaveBeenCalledWith('nature', 3);
+    expect(pixabay.browseImages).toHaveBeenCalledWith('nature', 3, undefined);
     expect(res.body).toMatchObject({ topic: 'nature', page: 3, hasMore: false });
+  });
+
+  it('filters by color', async () => {
+    const res = await request(app).get('/api/feed?color=pink');
+    expect(pixabay.browseImages).toHaveBeenCalledWith('all', 1, 'pink');
+    expect(res.body.color).toBe('pink');
   });
 
   it('needs no sign-in', async () => {
@@ -41,6 +47,7 @@ describe('GET /api/feed', () => {
 
   it.each([
     ['an unknown topic', '/api/feed?topic=nope'],
+    ['an unknown color', '/api/feed?color=plaid'],
     ['page 0', '/api/feed?page=0'],
     ['a page beyond 500 results', '/api/feed?page=26'],
   ])('rejects %s with VALIDATION_ERROR', async (_label, url) => {

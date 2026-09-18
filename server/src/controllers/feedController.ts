@@ -5,11 +5,12 @@ import * as pixabay from '../services/pixabayService.js';
 import { toSearchResult } from '../utils/toDto.js';
 
 export async function getFeed(_req: Request, res: Response) {
-  const { topic, page } = res.locals.query as FeedQuery;
-  const { hits, total } = await pixabay.browseImages(topic, page);
+  const { topic, color, page } = res.locals.query as FeedQuery;
+  const { hits, total } = await pixabay.browseImages(topic, page, color);
 
   res.json({
     topic,
+    color: color ?? null,
     results: hits.map(toSearchResult),
     page,
     perPage: pixabay.PER_PAGE,

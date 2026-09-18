@@ -40,6 +40,16 @@ describe('browseImages', () => {
     expect(url.searchParams.has('q')).toBe(false);
   });
 
+  it('adds the color filter and widens "all" beyond editor\'s choice', async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ total: 50, totalHits: 50, hits }));
+
+    await service.browseImages('all', 1, 'blue');
+
+    const url = new URL(String(fetchMock.mock.calls[0][0]));
+    expect(url.searchParams.get('colors')).toBe('blue');
+    expect(url.searchParams.has('editors_choice')).toBe(false);
+  });
+
   it('caches each topic page separately from searches', async () => {
     fetchMock.mockImplementation(async () => jsonResponse({ total: 3, totalHits: 3, hits }));
 

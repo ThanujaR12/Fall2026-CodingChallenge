@@ -13,6 +13,7 @@ import { CollectionsPage } from '@/pages/CollectionsPage';
 import { HomePage } from '@/pages/HomePage';
 import { LoginPage } from '@/pages/LoginPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
+import { PalettesPage } from '@/pages/PalettesPage';
 import { SearchPage } from '@/pages/SearchPage';
 import { SharedCollectionPage } from '@/pages/SharedCollectionPage';
 
@@ -45,6 +46,7 @@ export default function App() {
           <Route path="search" element={<SearchPage />} />
           <Route path="collections" element={<CollectionsPage />} />
           <Route path="collections/:id" element={<CollectionPage />} />
+          <Route path="palettes" element={<PalettesPage />} />
           {/* Sidebar destinations still to be built. */}
           <Route
             path="explore"

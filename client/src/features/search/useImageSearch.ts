@@ -1,12 +1,13 @@
 // Loads search results page by page, so "Load more" appends the next 20 to what's shown.
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { searchImages } from '@/api/search';
+import type { ImageColor } from '@/lib/colors';
 import { queryKeys } from '@/lib/queryKeys';
 
-export function useImageSearch(q: string) {
+export function useImageSearch(q: string, color: ImageColor | null = null) {
   const query = useInfiniteQuery({
-    queryKey: queryKeys.search(q),
-    queryFn: ({ pageParam }) => searchImages(q, pageParam),
+    queryKey: queryKeys.search(q, color),
+    queryFn: ({ pageParam }) => searchImages(q, pageParam, color),
     initialPageParam: 1,
     getNextPageParam: (last) => (last.hasMore ? last.page + 1 : undefined),
     enabled: q.trim().length > 0,

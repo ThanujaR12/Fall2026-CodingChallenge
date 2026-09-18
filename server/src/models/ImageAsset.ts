@@ -19,6 +19,8 @@ const imageAssetSchema = new Schema(
     byteLength: { type: Number, required: true, max: MAX_IMAGE_BYTES },
     width: { type: Number },
     height: { type: Number },
+    // Dominant colors (hex, most common first), computed once when stored; absent on older copies.
+    colors: { type: [String], default: undefined },
   },
   { timestamps: true },
 );

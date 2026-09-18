@@ -28,6 +28,8 @@ export type CollectionSummary = {
   coverImageUrl: string | null;
   coverCreatorName: string | null;
   coverPageUrl: string | null;
+  /** Up to five dominant colors ("#RRGGBB"), most prominent first; [] for an empty board. */
+  palette: string[];
   createdAt: string;
   updatedAt: string;
   /** Present only when collections are listed for a specific image. */

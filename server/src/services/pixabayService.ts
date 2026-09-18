@@ -1,5 +1,6 @@
 // Talks to the Pixabay API (server-side only, so the key stays secret) and caches responses 24 hours.
 import { env } from '../config/env.js';
+import type { ImageColor } from '../config/colors.js';
 import { FEED_TOPICS, type FeedTopic } from '../config/feedTopics.js';
 import { MAX_IMAGE_BYTES } from '../config/limits.js';
 import { AppError } from '../utils/AppError.js';
@@ -73,13 +74,18 @@ async function fetchPage(
   return result;
 }
 
-export function searchImages(q: string, page: number) {
-  return fetchPage(`q:${q.toLowerCase()}|${page}`, { q }, page);
+export function searchImages(q: string, page: number, color?: ImageColor) {
+  const filters: Record<string, string> = color ? { q, colors: color } : { q };
+  return fetchPage(`q:${q.toLowerCase()}|${color ?? ''}|${page}`, filters, page);
 }
 
-/** Popular photos for a home-feed topic, no keyword needed. */
-export function browseImages(topic: FeedTopic, page: number) {
-  return fetchPage(`feed:${topic}|${page}`, FEED_TOPICS[topic], page);
+/** Popular photos for a home-feed topic, no keyword needed, optionally in one color. */
+export function browseImages(topic: FeedTopic, page: number, color?: ImageColor) {
+  // Editor's choice is too small a pool once a color is applied, so "all" widens to popular.
+  const base: Record<string, string> =
+    color && topic === 'all' ? { order: 'popular' } : { ...FEED_TOPICS[topic] };
+  const filters = color ? { ...base, colors: color } : base;
+  return fetchPage(`feed:${topic}|${color ?? ''}|${page}`, filters, page);
 }
 
 export async function getImageById(id: string): Promise<PixabayHit | null> {

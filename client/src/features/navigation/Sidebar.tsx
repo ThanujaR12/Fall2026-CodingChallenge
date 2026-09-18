@@ -3,6 +3,7 @@ import { useEffect, type FocusEvent } from 'react';
 import { Link, NavLink, useLocation } from 'react-router';
 import { LogoMark } from '@/components/Logo';
 import { cn } from '@/lib/utils';
+import { NavIcon } from './NavIcon';
 import { NAV_ITEMS } from './navItems';
 import { useSidebar } from './useSidebar';
 
@@ -52,7 +53,7 @@ export function Sidebar() {
         </Link>
 
         <ul className="flex flex-col items-center gap-2">
-          {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
+          {NAV_ITEMS.map(({ to, label, icon, end, colorful }) => (
             <li key={to}>
               <NavLink
                 to={to}
@@ -61,13 +62,15 @@ export function Sidebar() {
                 className={({ isActive }) =>
                   cn(
                     'group relative inline-flex size-12 items-center justify-center rounded-xl transition-colors',
-                    isActive ? 'bg-ink text-paper' : 'text-ink/75 hover:bg-surface hover:text-ink',
+                    isActive && !colorful && 'bg-ink text-paper',
+                    isActive && colorful && 'bg-surface',
+                    !isActive && 'text-ink/75 hover:bg-surface hover:text-ink',
                   )
                 }
               >
                 {({ isActive }) => (
                   <>
-                    <Icon size={24} weight={isActive ? 'fill' : 'regular'} aria-hidden="true" />
+                    <NavIcon icon={icon} active={isActive} colorful={colorful} />
                     {/* Label bubble on hover or keyboard focus; the link's aria-label names it. */}
                     <span
                       aria-hidden="true"
