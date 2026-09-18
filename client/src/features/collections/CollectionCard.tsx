@@ -51,6 +51,12 @@ export function CollectionCard({ collection }: CollectionCardProps) {
       )}
       <p className="mt-1 text-[13px] text-ink/65">
         {imageCount(collection.itemCount)} · {updatedAgo(collection.updatedAt)}
+        {collection.visibility === 'public' && (
+          <>
+            {' '}
+            · <span className="tag bg-accent-tint text-accent-deep">Public</span>
+          </>
+        )}
       </p>
       {shared && (
         <p className="mt-0.5 text-[13px] text-ink/65">

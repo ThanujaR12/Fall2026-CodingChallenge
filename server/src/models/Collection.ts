@@ -20,6 +20,8 @@ const collectionSchema = new Schema(
     members: { type: [memberSchema], default: [] },
     // Random token while the share link is on; null when it is off (the old link stops working).
     shareToken: { type: String, default: null },
+    // Public boards are listed on Explore and viewable by anyone; private is the default.
+    visibility: { type: String, enum: ['private', 'public'], default: 'private', index: true },
   },
   { timestamps: true },
 );

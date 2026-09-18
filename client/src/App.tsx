@@ -6,8 +6,9 @@ import { useAuth } from '@/features/auth/useAuth';
 import { MobileNav } from '@/features/navigation/MobileNav';
 import { Sidebar } from '@/features/navigation/Sidebar';
 import { SidebarProvider } from '@/features/navigation/SidebarProvider';
-import { Bell, ChatCircleDots, Compass, PlusSquare } from '@phosphor-icons/react';
+import { Bell, ChatCircleDots, PlusSquare } from '@phosphor-icons/react';
 import { ComingSoonPage } from '@/pages/ComingSoonPage';
+import { ExplorePage } from '@/pages/ExplorePage';
 import { CollectionPage } from '@/pages/CollectionPage';
 import { CollectionsPage } from '@/pages/CollectionsPage';
 import { HomePage } from '@/pages/HomePage';
@@ -41,6 +42,9 @@ export default function App() {
       <Route path="login" element={<LoginPage />} />
       <Route element={<Layout />}>
         <Route path="s/:token" element={<SharedCollectionPage />} />
+        {/* Explore and public boards are open to everyone, signed in or not. */}
+        <Route path="explore" element={<ExplorePage />} />
+        <Route path="explore/:id" element={<SharedCollectionPage source="public" />} />
         <Route element={<RequireAuth />}>
           <Route index element={<HomePage />} />
           <Route path="search" element={<SearchPage />} />
@@ -48,16 +52,6 @@ export default function App() {
           <Route path="collections/:id" element={<CollectionPage />} />
           <Route path="palettes" element={<PalettesPage />} />
           {/* Sidebar destinations still to be built. */}
-          <Route
-            path="explore"
-            element={
-              <ComingSoonPage
-                title="Explore"
-                icon={Compass}
-                body="Public boards from everyone on PixBoard will show up here."
-              />
-            }
-          />
           <Route
             path="create"
             element={

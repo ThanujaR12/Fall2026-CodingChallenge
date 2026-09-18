@@ -30,6 +30,8 @@ export type CollectionSummary = {
   coverPageUrl: string | null;
   /** Up to five dominant colors ("#RRGGBB"), most prominent first; [] for an empty board. */
   palette: string[];
+  /** Public boards are listed on Explore and viewable by anyone. */
+  visibility: Visibility;
   createdAt: string;
   updatedAt: string;
   /** Present only when collections are listed for a specific image. */
@@ -85,7 +87,19 @@ export type CollectionDetail = CollectionSummary & {
 /** What anyone with a share link sees. */
 export type SharedView = CollectionSummary & { owner: PublicUser; items: SavedItem[] };
 
-export type CollectionInput = { name: string; description: string };
+export type Visibility = 'private' | 'public';
+
+export type CollectionInput = { name: string; description: string; visibility?: Visibility };
+
+export type ExploreBoard = CollectionSummary & { owner: PublicUser };
+
+export type ExploreResponse = {
+  boards: ExploreBoard[];
+  page: number;
+  perPage: number;
+  total: number;
+  hasMore: boolean;
+};
 
 export type ItemChanges = { title?: string; note?: string };
 

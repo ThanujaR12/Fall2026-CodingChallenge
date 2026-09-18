@@ -1,9 +1,10 @@
-// Read-only board anyone with a share link can see (design 06), no account needed.
+// Read-only board (design 06) for share-link visitors and for public boards opened from Explore.
 import { useEffect } from 'react';
 import { Link, useParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { LinkBreak } from '@phosphor-icons/react';
 import { ApiError, assetUrl } from '@/api/client';
+import { getPublicBoard } from '@/api/explore';
 import { getSharedView } from '@/api/sharing';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
@@ -18,11 +19,17 @@ import { BoardPaletteBar } from '@/features/palettes/BoardPaletteBar';
 import { APP_NAME } from '@/lib/constants';
 import { imageCount, savedOn } from '@/lib/format';
 
-export function SharedCollectionPage() {
-  const { token = '' } = useParams();
+type SharedCollectionPageProps = {
+  /** "share": /s/:token links; "public": /explore/:id boards. */
+  source?: 'share' | 'public';
+};
+
+export function SharedCollectionPage({ source = 'share' }: SharedCollectionPageProps) {
+  const { token = '', id = '' } = useParams();
+  const isPublic = source === 'public';
   const shared = useQuery({
-    queryKey: ['shared', token],
-    queryFn: () => getSharedView(token),
+    queryKey: isPublic ? ['public-board', id] : ['shared', token],
+    queryFn: () => (isPublic ? getPublicBoard(id) : getSharedView(token)),
   });
   const name = shared.data?.name;
 
@@ -52,11 +59,18 @@ export function SharedCollectionPage() {
         {inactive ? (
           <EmptyState
             icon={<LinkBreak size={34} weight="duotone" />}
-            title="This link is no longer active."
-            body="The owner may have turned sharing off. Ask them for a new link."
+            title={isPublic ? "This board isn't public." : 'This link is no longer active.'}
+            body={
+              isPublic
+                ? 'The owner may have made it private. Find more boards on Explore.'
+                : 'The owner may have turned sharing off. Ask them for a new link.'
+            }
             action={
-              <Link to="/login" className={buttonVariants({ variant: 'secondary' })}>
-                Go to {APP_NAME}
+              <Link
+                to={isPublic ? '/explore' : '/login'}
+                className={buttonVariants({ variant: 'secondary' })}
+              >
+                {isPublic ? 'Back to Explore' : `Go to ${APP_NAME}`}
               </Link>
             }
           />
@@ -79,7 +93,7 @@ export function SharedCollectionPage() {
       <BoardHero palette={board.palette}>
         <header>
           <p className="label-caps mb-2 font-semibold [color:var(--board-accent,rgba(32,30,29,0.65))]">
-            Shared board · View only
+            {isPublic ? 'Public board · Explore' : 'Shared board · View only'}
           </p>
           <h1 className="text-[34px] break-words md:text-[54px]">{board.name}</h1>
           {board.description && (

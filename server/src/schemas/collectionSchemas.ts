@@ -18,8 +18,12 @@ export const createCollectionBody = z.object({
 });
 
 export const updateCollectionBody = z
-  .object({ name: nameField.optional(), description: descriptionField.optional() })
-  .refine((body) => body.name !== undefined || body.description !== undefined, {
+  .object({
+    name: nameField.optional(),
+    description: descriptionField.optional(),
+    visibility: z.enum(['private', 'public'], { error: 'Choose public or private.' }).optional(),
+  })
+  .refine((body) => Object.values(body).some((value) => value !== undefined), {
     message: 'Nothing to update.',
   });
 

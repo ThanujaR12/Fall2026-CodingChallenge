@@ -53,7 +53,9 @@ export async function createCollection(
 }
 
 // Item count, newest item (the cover, with its credit), and palette for each collection id.
-async function statsFor(collectionIds: Types.ObjectId[]): Promise<Map<string, CollectionStats>> {
+export async function statsFor(
+  collectionIds: Types.ObjectId[],
+): Promise<Map<string, CollectionStats>> {
   const palettes = await palettesFor(collectionIds);
   const rows = await SavedItem.aggregate<{
     _id: Types.ObjectId;
@@ -134,10 +136,11 @@ export async function listForUser(userId: Types.ObjectId, sourceId?: string) {
 export async function updateCollection(
   userId: Types.ObjectId,
   collectionId: string,
-  changes: { name?: string; description?: string },
+  changes: { name?: string; description?: string; visibility?: 'private' | 'public' },
 ) {
   const { collection, role } = await resolveAccess(userId, collectionId);
   if (changes.name !== undefined) assertCan(role, 'rename');
+  if (changes.visibility !== undefined) assertCan(role, 'changeVisibility');
   if (changes.description !== undefined) assertCan(role, 'editDescription');
 
   if (changes.name !== undefined) {
@@ -153,6 +156,7 @@ export async function updateCollection(
     collection.nameKey = nameKey;
   }
   if (changes.description !== undefined) collection.description = changes.description;
+  if (changes.visibility !== undefined) collection.visibility = changes.visibility;
 
   await collection.save();
   const stats = await statsFor([collection._id]);
@@ -165,7 +169,7 @@ export async function touchCollection(collectionId: Types.ObjectId): Promise<voi
 }
 
 // Items newest first with who added each one, plus cover stats computed from them.
-async function itemsWithStats(collectionId: Types.ObjectId) {
+export async function itemsWithStats(collectionId: Types.ObjectId) {
   const items = await SavedItem.find({ collectionId })
     .sort({ createdAt: -1, _id: -1 })
     .populate('addedBy', 'username');

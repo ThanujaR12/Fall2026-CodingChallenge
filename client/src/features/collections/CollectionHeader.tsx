@@ -17,6 +17,7 @@ export function CollectionHeader({ collection, actions, sharedAs }: CollectionHe
       <div className="min-w-0">
         <p className="label-caps mb-2 font-semibold [color:var(--board-accent,rgba(32,30,29,0.65))]">
           {sharedAs ? `Collection · shared with you as ${sharedAs.role}` : 'Collection'}
+          {collection.visibility === 'public' && ' · Public on Explore'}
         </p>
         <h1 className="text-[29px] break-words md:text-[44px]">{collection.name}</h1>
         {collection.description && (

@@ -1,4 +1,4 @@
-// Owner's Share dialog (design 05): share link toggle, member list with roles, and invites.
+// Owner's Share dialog (design 05): public/private, share link, member list with roles, invites.
 import { UsersThree } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,6 +13,7 @@ import type { CollectionDetail } from '@/types/api';
 import { InviteForm } from './InviteForm';
 import { MemberList } from './MemberList';
 import { ShareLinkToggle } from './ShareLinkToggle';
+import { VisibilityToggle } from './VisibilityToggle';
 
 type ShareDialogProps = { collection: CollectionDetail; myUserId: string };
 
@@ -33,7 +34,11 @@ export function ShareDialog({ collection, myUserId }: ShareDialogProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <ShareLinkToggle collectionId={collection.id} shareToken={collection.shareToken} />
+        <VisibilityToggle collectionId={collection.id} visibility={collection.visibility} />
+
+        <div className="border-t border-divider pt-5">
+          <ShareLinkToggle collectionId={collection.id} shareToken={collection.shareToken} />
+        </div>
 
         <div className="grid gap-3 border-t border-divider pt-5">
           <p className="label-caps">Members</p>

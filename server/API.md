@@ -43,6 +43,7 @@ Every error response has this shape:
 | 404    | `USER_NOT_FOUND`              | No account matches the invited username or email                     |
 | 404    | `MEMBER_NOT_FOUND`            | That user isn't a member of the collection                           |
 | 404    | `SHARE_LINK_INACTIVE`         | The share link is unknown or has been turned off                     |
+| 404    | `BOARD_NOT_PUBLIC`            | The board is private or no longer exists (Explore view)              |
 | 404    | `ITEM_NOT_FOUND`              | Item missing or not in that collection                               |
 | 404    | `IMAGE_NOT_FOUND`             | Stored image missing, or the Pixabay image no longer exists          |
 | 404    | `ROUTE_NOT_FOUND`             | Unknown path                                                         |
@@ -65,6 +66,7 @@ every request: a member without permission gets `403 FORBIDDEN`; a non-member ge
 | Save, edit, remove items            |             ✓              |                              ✓                               |   –    |
 | Edit description                    |             ✓              |                              ✓                               |   –    |
 | Rename or delete collection         |             ✓              |                              –                               |   –    |
+| Make public or private              |             ✓              |                              –                               |   –    |
 | Turn share link on/off              |             ✓              |                              –                               |   –    |
 | Invite, change role, remove members |             ✓              |                              –                               |   –    |
 | Leave collection                    |             –              |                              ✓                               |   ✓    |
@@ -98,6 +100,7 @@ type CollectionSummary = {
   coverCreatorName: string | null;
   coverPageUrl: string | null;
   palette: string[]; // up to 5 dominant colors ("#RRGGBB", most prominent first); [] when empty
+  visibility: 'private' | 'public'; // public boards appear on Explore; new boards are private
   createdAt: string; // ISO 8601
   updatedAt: string;
   containsImage?: boolean; // only when ?sourceId= is given
@@ -368,8 +371,9 @@ curl http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0
 
 ### `PATCH /collections/:id`
 
-Renames a collection and/or edits its description. Uses the same rules as creation. The owner may
-change both; an editor may change only the description (sending `name` → `403 FORBIDDEN`).
+Renames a collection, edits its description, and/or makes it public or private. Uses the same rules
+as creation. The owner may change all three; an editor may change only the description (sending
+`name` or `visibility` → `403 FORBIDDEN`).
 
 - **Auth**: token required
 - **Params**: `id` — collection id
@@ -377,6 +381,7 @@ change both; an editor may change only the description (sending `name` → `403 
   - `name`: 1–60 characters after trimming; must not match another of your collections (changing
     only the capitalization of its own name is allowed)
   - `description`: up to 280 characters
+  - `visibility`: `"public"` (listed on Explore, viewable by anyone) or `"private"`
 - **Response 200**: `{ "collection": CollectionSummary }`
 - **Errors**: `400 VALIDATION_ERROR` (including an empty body), `403 FORBIDDEN`,
   `404 COLLECTION_NOT_FOUND`, `409 COLLECTION_NAME_TAKEN`
@@ -481,6 +486,37 @@ title and note) is not affected.
 
 ```bash
 curl -X DELETE http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0/items/66e8a3b1c2d4e5f6a7b8c9d0
+```
+
+## Explore
+
+Public boards anyone can browse, no sign-in needed. Boards with no images are left out.
+
+### `GET /explore?color=&page=`
+
+- **Auth**: none
+- **Query**:
+  - `color` (optional): a color name from `GET /feed`; keeps boards whose palette leads with that
+    color (`grayscale` keeps boards made only of black, gray, and white)
+  - `page` (optional): integer ≥ 1, default `1`; 24 boards per page, most recently updated first
+- **Response 200**:
+  `{ "boards": (CollectionSummary & { owner: PublicUser })[], "page": 1, "perPage": 24, "total": 3, "hasMore": false }`
+- **Errors**: `400 VALIDATION_ERROR`
+
+```bash
+curl "http://localhost:4000/api/explore?color=blue"
+```
+
+### `GET /explore/:id`
+
+A public board's read-only view: the same shape as `GET /shared/:token` (no members, no token).
+
+- **Auth**: none
+- **Response 200**: `{ "collection": CollectionSummary & { owner: PublicUser, items: SavedItem[] } }`
+- **Errors**: `400 VALIDATION_ERROR` (malformed id), `404 BOARD_NOT_PUBLIC`
+
+```bash
+curl http://localhost:4000/api/explore/66e8a1f2c3b4d5e6f7a8b9c0
 ```
 
 ## Sharing

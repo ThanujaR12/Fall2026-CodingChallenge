@@ -25,6 +25,7 @@ type CollectionLike = {
   _id: Types.ObjectId;
   name: string;
   description?: string | null;
+  visibility?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -39,6 +40,7 @@ export function toCollectionSummary(collection: CollectionLike, stats: Collectio
     coverCreatorName: stats.coverAsset ? stats.coverCreatorName : null,
     coverPageUrl: stats.coverAsset ? stats.coverPageUrl : null,
     palette: stats.palette ?? [],
+    visibility: collection.visibility === 'public' ? 'public' : 'private',
     createdAt: collection.createdAt.toISOString(),
     updatedAt: collection.updatedAt.toISOString(),
   };

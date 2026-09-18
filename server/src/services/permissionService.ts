@@ -5,6 +5,7 @@ import { AppError } from '../utils/AppError.js';
 
 export type Action =
   | 'view'
+  | 'changeVisibility'
   | 'editItems'
   | 'editDescription'
   | 'rename'
@@ -19,6 +20,7 @@ export const PERMISSIONS: Record<Action, Role[]> = {
   editItems: ['owner', 'editor'],
   editDescription: ['owner', 'editor'],
   rename: ['owner'],
+  changeVisibility: ['owner'],
   delete: ['owner'],
   share: ['owner'],
   manageMembers: ['owner'],
