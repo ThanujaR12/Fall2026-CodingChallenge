@@ -1,4 +1,4 @@
-// Unboxed board card: cover photo with its credit, then name, description, counts, and sharing.
+// Unboxed board card: cover photo, its color strip, then name, description, counts, and sharing.
 import { Link } from 'react-router';
 import { assetUrl } from '@/api/client';
 import { ImageCredit } from '@/components/ImageCredit';
@@ -30,6 +30,17 @@ export function CollectionCard({ collection }: CollectionCardProps) {
             style={{ aspectRatio: '16 / 10' }}
           >
             <span className="text-[13px] text-ink/65 italic">No images yet</span>
+          </div>
+        )}
+        {collection.palette.length > 0 && (
+          <div
+            className="flex h-2"
+            role="img"
+            aria-label={`Colors: ${collection.palette.join(', ')}`}
+          >
+            {collection.palette.map((color) => (
+              <span key={color} className="flex-1" style={{ backgroundColor: color }} />
+            ))}
           </div>
         )}
         <h3 className="mt-3 text-[20px] group-hover:text-accent-deep">{collection.name}</h3>

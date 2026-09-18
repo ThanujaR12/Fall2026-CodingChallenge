@@ -13,6 +13,8 @@ import { LazyImage } from '@/components/LazyImage';
 import { PageContainer } from '@/components/PageContainer';
 import { buttonVariants } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BoardHero } from '@/features/palettes/BoardHero';
+import { BoardPaletteBar } from '@/features/palettes/BoardPaletteBar';
 import { APP_NAME } from '@/lib/constants';
 import { imageCount, savedOn } from '@/lib/format';
 
@@ -73,24 +75,29 @@ export function SharedCollectionPage() {
   const board = shared.data;
 
   return (
-    <PageContainer className="pt-6 md:pt-14">
-      <header className="mb-10 md:mb-12">
-        <p className="label-caps mb-2">Shared board · View only</p>
-        <h1 className="text-[34px] break-words md:text-[54px]">{board.name}</h1>
-        {board.description && (
-          <p className="mt-3 max-w-[620px] text-[16px] text-ink/75">{board.description}</p>
-        )}
-        <p className="mt-4 flex flex-wrap items-center gap-2 text-[14px] text-ink/75">
-          <span
-            aria-hidden="true"
-            className="inline-flex size-7 items-center justify-center rounded-full bg-accent-deep text-[11px] font-semibold text-white uppercase"
-          >
-            {board.owner.username.slice(0, 2)}
-          </span>
-          A board by <strong className="font-semibold text-ink">@{board.owner.username}</strong> ·{' '}
-          {imageCount(board.itemCount)} · updated {savedOn(board.updatedAt)}
-        </p>
-      </header>
+    <PageContainer>
+      <BoardHero palette={board.palette}>
+        <header>
+          <p className="label-caps mb-2 font-semibold [color:var(--board-accent,rgba(32,30,29,0.65))]">
+            Shared board · View only
+          </p>
+          <h1 className="text-[34px] break-words md:text-[54px]">{board.name}</h1>
+          {board.description && (
+            <p className="mt-3 max-w-[620px] text-[16px] text-ink/75">{board.description}</p>
+          )}
+          <p className="mt-4 flex flex-wrap items-center gap-2 text-[14px] text-ink/75">
+            <span
+              aria-hidden="true"
+              className="inline-flex size-7 items-center justify-center rounded-full bg-accent-deep text-[11px] font-semibold text-white uppercase"
+            >
+              {board.owner.username.slice(0, 2)}
+            </span>
+            A board by <strong className="font-semibold text-ink">@{board.owner.username}</strong> ·{' '}
+            {imageCount(board.itemCount)} · updated {savedOn(board.updatedAt)}
+          </p>
+          <BoardPaletteBar palette={board.palette} />
+        </header>
+      </BoardHero>
 
       {board.items.length === 0 ? (
         <p className="text-[15px] text-ink/65 italic">Nothing has been saved to this board yet.</p>

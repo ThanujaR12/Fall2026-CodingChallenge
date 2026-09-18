@@ -18,6 +18,7 @@ import { ItemDetailPanel } from '@/features/items/ItemDetailPanel';
 import { MembersDialog } from '@/features/sharing/MembersDialog';
 import { ShareDialog } from '@/features/sharing/ShareDialog';
 import { SavedItemGrid } from '@/features/items/SavedItemGrid';
+import { BoardHero } from '@/features/palettes/BoardHero';
 import { APP_NAME } from '@/lib/constants';
 
 export function CollectionPage() {
@@ -91,28 +92,30 @@ export function CollectionPage() {
   const canEdit = data.role === 'owner' || data.role === 'editor';
 
   return (
-    <PageContainer className="pt-6 md:pt-10">
-      <CollectionHeader
-        collection={data}
-        sharedAs={
-          isOwner
-            ? undefined
-            : { owner: data.owner.username, role: data.role as 'editor' | 'viewer' }
-        }
-        actions={
-          <>
-            {canEdit && <EditCollectionDialog collection={data} canRename={isOwner} />}
-            {isOwner ? (
-              <>
-                <ShareDialog collection={data} myUserId={myUserId} />
-                <DeleteCollectionDialog collection={data} />
-              </>
-            ) : (
-              <MembersDialog collection={data} myUserId={myUserId} />
-            )}
-          </>
-        }
-      />
+    <PageContainer>
+      <BoardHero palette={data.palette}>
+        <CollectionHeader
+          collection={data}
+          sharedAs={
+            isOwner
+              ? undefined
+              : { owner: data.owner.username, role: data.role as 'editor' | 'viewer' }
+          }
+          actions={
+            <>
+              {canEdit && <EditCollectionDialog collection={data} canRename={isOwner} />}
+              {isOwner ? (
+                <>
+                  <ShareDialog collection={data} myUserId={myUserId} />
+                  <DeleteCollectionDialog collection={data} />
+                </>
+              ) : (
+                <MembersDialog collection={data} myUserId={myUserId} />
+              )}
+            </>
+          }
+        />
+      </BoardHero>
 
       {data.items.length === 0 ? (
         <EmptyState
