@@ -14,8 +14,12 @@ type GoogleIdentity = {
       initialize: (options: {
         client_id: string;
         callback: (response: { credential?: string }) => void;
+        use_fedcm_for_prompt?: boolean;
+        cancel_on_tap_outside?: boolean;
       }) => void;
       renderButton: (element: HTMLElement, options: Record<string, unknown>) => void;
+      prompt: () => void;
+      cancel: () => void;
     };
   };
 };
@@ -64,6 +68,9 @@ export function GoogleButton({ onSuccess }: { onSuccess: () => void }) {
         if (cancelled || !container || !window.google) return;
         window.google.accounts.id.initialize({
           client_id: CLIENT_ID,
+          // One Tap: browsers already signed in to Google show an account picker right away.
+          use_fedcm_for_prompt: true,
+          cancel_on_tap_outside: true,
           callback: async ({ credential }) => {
             if (!credential) return;
             setError(null);
@@ -87,6 +94,8 @@ export function GoogleButton({ onSuccess }: { onSuccess: () => void }) {
           logo_alignment: 'center',
           width: Math.min(container.clientWidth || 380, 400),
         });
+        // Offer the signed-in Google accounts without waiting for a click.
+        window.google.accounts.id.prompt();
       })
       .catch(() => {
         if (!cancelled)
@@ -95,6 +104,7 @@ export function GoogleButton({ onSuccess }: { onSuccess: () => void }) {
 
     return () => {
       cancelled = true;
+      window.google?.accounts.id.cancel();
     };
   }, []);
 
