@@ -5,7 +5,7 @@ import { PageContainer } from '@/components/PageContainer';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAuth } from '@/features/auth/useAuth';
-import { APP_NAME } from '@/lib/constants';
+import { Logo } from './Logo';
 import { cn } from '@/lib/utils';
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -22,9 +22,9 @@ export function AppHeader() {
       <PageContainer className="flex min-h-[56px] items-center justify-between gap-3">
         <Link
           to={user ? '/search' : '/login'}
-          className="inline-flex min-h-11 items-center text-[18px] font-semibold tracking-[-0.015em] text-ink"
+          className="inline-flex min-h-11 items-center text-[18px] text-ink"
         >
-          {APP_NAME}
+          <Logo markClassName="size-[22px]" />
         </Link>
 
         {status === 'signedIn' && user ? (

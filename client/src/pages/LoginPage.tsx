@@ -5,7 +5,8 @@ import { GoogleButton } from '@/features/auth/GoogleButton';
 import { LoginForm } from '@/features/auth/LoginForm';
 import { SignupForm } from '@/features/auth/SignupForm';
 import { useAuth } from '@/features/auth/useAuth';
-import { APP_NAME, LOGO_SWATCHES } from '@/lib/constants';
+import { Logo } from '@/components/Logo';
+import { APP_NAME } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
 // Only allow in-app paths as a "next" destination, never another site.
@@ -54,14 +55,7 @@ export function LoginPage() {
     <div className="grid min-h-dvh bg-paper md:grid-cols-2">
       <main className="flex items-center px-4 py-10 md:px-14">
         <div className="w-full max-w-[380px]">
-          <div className="mb-10 flex items-center gap-2.5">
-            <span className="flex h-4 overflow-hidden" aria-hidden="true">
-              {LOGO_SWATCHES.map((color) => (
-                <span key={color} className="w-3" style={{ backgroundColor: color }} />
-              ))}
-            </span>
-            <span className="text-[18px] font-semibold">{APP_NAME}</span>
-          </div>
+          <Logo className="mb-10 gap-2.5 text-[20px] text-ink" markClassName="size-7" />
 
           <h1 className="text-[34px] md:text-[42px]">
             {mode === 'signup' ? 'Create your account.' : 'Welcome back.'}
