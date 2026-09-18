@@ -176,6 +176,22 @@ As a browser, I take or upload a photo and find photos like it.
    narrows them to the photo's leading colour.
 4. The photo never leaves the device; only the recognised words are searched.
 
+### User Story 13 - Your profile (Priority: P2)
+
+As a collector, clicking my avatar ("My profile" on hover) opens a profile of my saved ideas and
+boards that I can personalise.
+
+**Acceptance Scenarios**:
+
+1. The page shows my name, @username, join date, bio, and stats (boards, saved photos,
+   collaborators, boards shared with me).
+2. My **colour signature** (all my boards' palettes blended) themes the page, rings my avatar, and
+   links to photos in my main colour.
+3. Tabs show everything I've saved (with the board each is on), my boards (plus Create), and boards
+   shared with me; the tab is kept in the address.
+4. I can edit my display name, bio (≤ 160), and avatar colour (suggested from my signature); the
+   header avatar updates at once.
+
 ### Edge Cases
 
 - An image whose colors can't be read still saves; its board simply has fewer colors.

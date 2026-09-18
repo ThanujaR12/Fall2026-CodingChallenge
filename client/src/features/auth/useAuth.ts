@@ -10,6 +10,8 @@ export type AuthState = {
   register: (username: string, email: string, password: string) => Promise<void>;
   loginWithGoogle: (credential: string, mode: GoogleMode) => Promise<void>;
   logout: () => void;
+  /** Replaces the signed-in user's details after a profile edit. */
+  updateUser: (user: AuthUser) => void;
 };
 
 export const AuthContext = createContext<AuthState | null>(null);

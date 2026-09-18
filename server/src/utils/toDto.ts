@@ -98,7 +98,15 @@ export function toSharedView(
   };
 }
 
-type UserLike = { _id: Types.ObjectId; username: string; email?: string | null };
+type UserLike = {
+  _id: Types.ObjectId;
+  username: string;
+  email?: string | null;
+  displayName?: string | null;
+  bio?: string | null;
+  avatarColor?: string | null;
+  createdAt?: Date;
+};
 
 type NotificationLike = {
   _id: Types.ObjectId;
@@ -156,7 +164,38 @@ export function toPublicUser(user: UserLike) {
 }
 
 export function toAuthUser(user: UserLike) {
-  return { id: String(user._id), username: user.username, email: user.email ?? '' };
+  return {
+    id: String(user._id),
+    username: user.username,
+    email: user.email ?? '',
+    displayName: user.displayName ?? '',
+    avatarColor: user.avatarColor ?? '',
+  };
+}
+
+export function toProfileUser(user: UserLike) {
+  return {
+    ...toAuthUser(user),
+    bio: user.bio ?? '',
+    joinedAt: user.createdAt ? user.createdAt.toISOString() : null,
+  };
+}
+
+type SavedWithBoard = Omit<SavedItemLike, 'collectionId'> & {
+  collectionId: { _id: Types.ObjectId; name: string } | null;
+};
+
+/** A saved photo on your profile, with the board it's on. */
+export function toProfileSaved(item: SavedWithBoard) {
+  const board = item.collectionId
+    ? { id: String(item.collectionId._id), name: item.collectionId.name }
+    : null;
+  const collectionId = item.collectionId?._id ?? item._id;
+  return {
+    ...toSavedItem({ ...item, collectionId }),
+    board,
+    savedAt: item.createdAt.toISOString(),
+  };
 }
 
 // addedBy is a user document when populated, or just an id when it was not.

@@ -15,6 +15,8 @@ The full, authoritative reference (request/response shapes, errors, curl example
 | `PATCH /collections/:id` | token | Adds `visibility` (owner only, else `403 FORBIDDEN`) |
 | `GET /collections/:id/activity` | token | Recent activity on a board (anyone who can view it) |
 | `GET /collections/:id/recommendations?page=` | token | "More ideas": photos like the board's, plus `basedOn` |
+| `GET /profile` / `PATCH /profile` | token | Your profile, stats, and colour signature; edit name, bio, avatar colour |
+| `GET /profile/saved?page=` | token | Everything you've saved, with its board |
 | `GET /notifications` | token | Newest 50 + `unreadCount` |
 | `POST /notifications/:id/read` | token | Mark one read (`404 NOTIFICATION_NOT_FOUND` if not yours) |
 | `POST /notifications/read-all` | token | Mark all read |

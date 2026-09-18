@@ -1,13 +1,14 @@
 // Top bar, pinned while you scroll: the logo (hidden while the sidebar shows its icon), the
 // always-there search for signed-in people, and the account menu (or Log in).
 import { Link } from 'react-router';
-import { SignOut } from '@phosphor-icons/react';
+import { CaretDown, SignOut } from '@phosphor-icons/react';
 import { PageContainer } from '@/components/PageContainer';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAuth } from '@/features/auth/useAuth';
 import { useSidebar } from '@/features/navigation/useSidebar';
 import { HeaderSearch } from '@/features/search/HeaderSearch';
+import { Avatar } from './Avatar';
 import { Logo } from './Logo';
 import { cn } from '@/lib/utils';
 
@@ -38,20 +39,63 @@ export function AppHeader() {
         )}
 
         {status === 'signedIn' && user ? (
-          <div className="flex shrink-0 items-center">
+          <div className="flex shrink-0 items-center gap-0.5">
+            {/* Your avatar opens your profile; "My profile" shows on hover or keyboard focus. */}
+            <Link
+              to="/profile"
+              aria-label="My profile"
+              className="group relative inline-flex rounded-full p-0.5 outline-offset-2 hover:bg-surface"
+            >
+              <Avatar
+                name={user.displayName || user.username}
+                color={user.avatarColor}
+                className="size-10 text-[13px] md:size-9"
+              />
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute top-full right-0 z-50 mt-2 rounded-md bg-ink px-2.5 py-1 text-[13px] font-semibold whitespace-nowrap text-paper opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+              >
+                My profile
+              </span>
+            </Link>
+            {/* A small menu beside it for quick jumps and signing out. */}
             <Popover>
               <PopoverTrigger
-                aria-label={`Account: ${user.username}`}
-                className="inline-flex size-11 cursor-pointer items-center justify-center rounded-full bg-accent-deep text-[13px] font-semibold text-white uppercase md:size-9"
+                aria-label="Account menu"
+                className="inline-flex size-9 cursor-pointer items-center justify-center rounded-full text-ink/70 hover:bg-surface hover:text-ink"
               >
-                {user.username.slice(0, 2)}
+                <CaretDown size={16} aria-hidden="true" />
               </PopoverTrigger>
-              <PopoverContent align="end" className="grid w-[240px] gap-3">
-                <div>
-                  <p className="text-[15px] font-semibold">@{user.username}</p>
-                  <p className="truncate text-[13px] text-ink/65">{user.email}</p>
-                </div>
-                <Button variant="secondary" onClick={logout}>
+              <PopoverContent align="end" className="grid w-[260px] gap-1 p-2">
+                <Link
+                  to="/profile"
+                  className="flex items-center gap-3 rounded-xl p-2 hover:bg-surface"
+                >
+                  <Avatar
+                    name={user.displayName || user.username}
+                    color={user.avatarColor}
+                    className="size-10 text-[13px]"
+                  />
+                  <span className="min-w-0">
+                    <span className="block truncate text-[15px] font-semibold">
+                      {user.displayName || user.username}
+                    </span>
+                    <span className="block truncate text-[12px] text-ink/65">{user.email}</span>
+                  </span>
+                </Link>
+                <Link to="/profile" className="rounded-lg px-3 py-2 text-[14px] hover:bg-surface">
+                  Saved photos
+                </Link>
+                <Link
+                  to="/profile?tab=boards"
+                  className="rounded-lg px-3 py-2 text-[14px] hover:bg-surface"
+                >
+                  Your boards
+                </Link>
+                <Link to="/palettes" className="rounded-lg px-3 py-2 text-[14px] hover:bg-surface">
+                  Your palettes
+                </Link>
+                <Button variant="ghost" onClick={logout} className="justify-start">
                   <SignOut size={16} />
                   Log out
                 </Button>

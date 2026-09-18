@@ -71,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const res = await authApi.loginWithGoogle(credential, mode);
         finishSignIn(res.token, res.user);
       },
+      updateUser: (next) => setUser(next),
       logout: () => {
         clearToken();
         queryClient.clear();

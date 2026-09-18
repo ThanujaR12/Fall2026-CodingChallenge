@@ -16,6 +16,7 @@ import { LoginPage } from '@/pages/LoginPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { PalettesPage } from '@/pages/PalettesPage';
 import { PhotoPage } from '@/pages/PhotoPage';
+import { ProfilePage } from '@/pages/ProfilePage';
 import { VisualSearchPage } from '@/pages/VisualSearchPage';
 import { SearchPage } from '@/pages/SearchPage';
 import { SharedCollectionPage } from '@/pages/SharedCollectionPage';
@@ -55,6 +56,7 @@ export default function App() {
           <Route path="palettes" element={<PalettesPage />} />
           <Route path="photo/:sourceId" element={<PhotoPage />} />
           <Route path="visual-search" element={<VisualSearchPage />} />
+          <Route path="profile" element={<ProfilePage />} />
           <Route path="create" element={<CreatePage />} />
           <Route path="notifications" element={<NotificationsPage />} />
         </Route>

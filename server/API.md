@@ -583,6 +583,31 @@ A public board's read-only view: the same shape as `GET /shared/:token` (no memb
 curl http://localhost:4000/api/explore/66e8a1f2c3b4d5e6f7a8b9c0
 ```
 
+## Profile
+
+Your own profile. All endpoints require a token.
+
+### `GET /profile`
+
+- **Response 200**:
+  `{ "profile": { "user": { "id", "username", "email", "displayName", "avatarColor", "bio", "joinedAt" }, "stats": { "boards", "sharedWithYou", "savedPhotos", "collaborators" }, "colorSignature": ["#RRGGBB", …] } }`
+  (`colorSignature` blends the palettes of all your boards, up to 5 colours; `collaborators` counts
+  everyone you share boards with)
+
+### `PATCH /profile`
+
+- **Body** (at least one): `displayName` (≤ 50), `bio` (≤ 160), `avatarColor` (`"#RRGGBB"` or `""`)
+- **Response 200**: `{ "user": ProfileUser }`
+- **Errors**: `400 VALIDATION_ERROR`
+
+### `GET /profile/saved?page=`
+
+Every photo you have saved, on any board, newest first (30 per page).
+
+- **Response 200**: `{ "items": (SavedItem & { "board": { "id", "name" }, "savedAt" })[], "page", "perPage": 30, "total", "hasMore" }`
+
+`POST /auth/*` and `GET /auth/me` now also return `displayName` and `avatarColor` on the user.
+
 ## Notifications
 
 Board members are notified when someone else adds, edits, or removes an item, and people are

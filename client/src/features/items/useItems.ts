@@ -49,6 +49,7 @@ export function useSaveItem() {
       void queryClient.invalidateQueries({ queryKey: ['collections'] });
       void queryClient.invalidateQueries({ queryKey: queryKeys.collection(vars.collectionId) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.activity(vars.collectionId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.profile });
       // Marked stale but not refetched now, so the tile just added keeps its "Added" state.
       void queryClient.invalidateQueries({
         queryKey: ['recommendations', vars.collectionId],
@@ -132,6 +133,7 @@ export function useRemoveItem(collectionId: string) {
       void queryClient.invalidateQueries({ queryKey: key });
       void queryClient.invalidateQueries({ queryKey: ['collections'] });
       void queryClient.invalidateQueries({ queryKey: queryKeys.activity(collectionId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.profile });
     },
   });
 }

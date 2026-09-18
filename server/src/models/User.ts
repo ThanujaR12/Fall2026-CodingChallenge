@@ -14,6 +14,10 @@ const userSchema = new Schema(
     googleId: { type: String },
     // Marks the single built-in owner used before real accounts existed (Feature 1).
     isStandIn: { type: Boolean, default: false },
+    // Profile, all optional: a friendlier name, a short bio, and the avatar's colour (hex).
+    displayName: { type: String, trim: true, maxlength: 50, default: '' },
+    bio: { type: String, trim: true, maxlength: 160, default: '' },
+    avatarColor: { type: String, default: '' },
   },
   { timestamps: true },
 );

@@ -77,6 +77,8 @@ against a throwaway in-memory copy of the app (screenshots and scripted checks).
 
 - [X] T029 [US9] Search always available: one search bar pinned in the header on every page (photo, board, Palettes, Explore…), with recent searches, "/" to focus, the query shown on results, and "Search more like …" on photo pages; Home and Search drop their own bars; repeated Pixabay tags de-duplicated
 
+- [X] T030 [US13] Profile: `GET/PATCH /api/profile`, `GET /api/profile/saved` (stats, colour signature, display name / bio / avatar colour); profile page themed by the signature with a palette-ringed avatar, Saved / Boards / Shared tabs, Edit profile dialog; avatar links to it with a "My profile" label and a small account menu; tests; API.md
+
 ## Phase 8: Polish
 
 - [ ] T021 README.txt: features tour, setup, live link

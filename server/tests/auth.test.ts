@@ -25,6 +25,8 @@ describe('POST /api/auth/register', () => {
       id: expect.any(String),
       username: 'Alice_1',
       email: 'alice@example.com',
+      displayName: '',
+      avatarColor: '',
     });
     expect(JSON.stringify(res.body)).not.toContain('password123');
 

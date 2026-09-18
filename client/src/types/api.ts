@@ -58,7 +58,29 @@ export type SavedItem = {
 
 export type PublicUser = { id: string; username: string };
 
-export type AuthUser = PublicUser & { email: string };
+export type AuthUser = PublicUser & { email: string; displayName: string; avatarColor: string };
+
+export type ProfileUser = AuthUser & { bio: string; joinedAt: string | null };
+
+export type Profile = {
+  user: ProfileUser;
+  stats: { boards: number; sharedWithYou: number; savedPhotos: number; collaborators: number };
+  /** Your boards' palettes blended into one (up to 5 colours). */
+  colorSignature: string[];
+};
+
+export type ProfileSaved = SavedItem & {
+  board: { id: string; name: string } | null;
+  savedAt: string;
+};
+
+export type ProfileSavedPage = {
+  items: ProfileSaved[];
+  page: number;
+  perPage: number;
+  total: number;
+  hasMore: boolean;
+};
 
 export type AuthResponse = { token: string; user: AuthUser };
 
