@@ -192,6 +192,19 @@ boards that I can personalise.
 4. I can edit my display name, bio (≤ 160), and avatar colour (suggested from my signature); the
    header avatar updates at once.
 
+### User Story 14 - A personal "For you" feed (Priority: P1)
+
+As a collector, Home feels made for me: fresh every visit, and more like what I save the more I save.
+
+**Acceptance Scenarios**:
+
+1. **Given** I haven't saved anything, **When** I open Home, **Then** "For you" shows a shuffled mix
+   of popular photos that differs from visit to visit (and on Shuffle).
+2. **Given** I've saved photos, **When** I open Home, **Then** the feed is built from my interests
+   (recent saves count most; board names help), says what it learned, and labels each photo with
+   why it was picked; a few popular discoveries are mixed in; photos I saved never reappear.
+3. Tapping an interest searches it; Shuffle deals a fresh feed at once.
+
 ### Edge Cases
 
 - An image whose colors can't be read still saves; its board simply has fewer colors.

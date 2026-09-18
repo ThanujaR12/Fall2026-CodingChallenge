@@ -223,6 +223,21 @@ curl http://localhost:4000/api/auth/me -H "Authorization: Bearer <token>"
 
 ## Feed
 
+### `GET /feed/for-you?page=&seed=`
+
+A home feed personalised from what you save. People who haven't saved anything get a shuffled mix
+of popular photos. After that it is built from your **interests**: the tags of photos you saved
+(the 20 newest count triple, the next 20 double) plus your board names, skipping generic tags; each
+page interleaves photos for those interests with a few popular discoveries and never includes
+photos you already saved. `seed` (the client picks a new one per visit, or on Shuffle) reshuffles
+the feed and where each interest starts, while keeping one visit's pages consistent.
+
+- **Auth**: token required
+- **Query**: `page` (1–20, default 1), `seed` (letters, digits, `-`; up to 40)
+- **Response 200**:
+  `{ "personalized": true, "interests": ["harbor", "boat"], "results": (SearchResult & { "reason": "Because you save harbor photos" | "Popular right now" | null })[], "page": 1, "hasMore": true }`
+- **Errors**: `400 VALIDATION_ERROR`, `401 UNAUTHENTICATED`
+
 ### `GET /feed?topic=&color=&page=`
 
 Popular photos for the home feed, no keyword needed (safe search on, 20 per page, cached 24 hours).

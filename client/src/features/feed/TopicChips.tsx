@@ -1,4 +1,5 @@
-// Row of chips above the Home feed (like Pinterest's board tabs): All, your boards, then topics.
+// Row of chips above the Home feed (like Pinterest's board tabs): For you, your boards, then
+// Popular and the topics.
 // Scrolls sideways on small screens.
 import { assetUrl } from '@/api/client';
 import { FEED_TOPICS, type FeedTopic } from '@/lib/feedTopics';
@@ -6,8 +7,10 @@ import { cn } from '@/lib/utils';
 import type { CollectionSummary } from '@/types/api';
 
 type TopicChipsProps = {
-  /** The chosen topic, or null while a board is chosen. */
+  /** The chosen topic, or null while For you or a board is chosen. */
   topic: FeedTopic | null;
+  forYou: boolean;
+  onForYou: () => void;
   boardId: string | null;
   boards: CollectionSummary[];
   onTopic: (topic: FeedTopic) => void;
@@ -20,27 +23,28 @@ const chip = (active: boolean) =>
     active ? 'bg-ink text-paper' : 'bg-surface text-ink hover:bg-neutral-200',
   );
 
-export function TopicChips({ topic, boardId, boards, onTopic, onBoard }: TopicChipsProps) {
+export function TopicChips({
+  topic,
+  forYou,
+  onForYou,
+  boardId,
+  boards,
+  onTopic,
+  onBoard,
+}: TopicChipsProps) {
   return (
     <nav
       aria-label="Topics and your boards"
       className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] md:mx-0 md:px-0"
     >
       <ul className="flex w-max items-center gap-2">
-        {FEED_TOPICS.slice(0, 1).map((t) => (
-          <li key={t.id}>
-            <button
-              type="button"
-              aria-pressed={t.id === topic}
-              onClick={() => onTopic(t.id)}
-              className={chip(t.id === topic)}
-            >
-              {t.label}
-            </button>
-          </li>
-        ))}
+        <li>
+          <button type="button" aria-pressed={forYou} onClick={onForYou} className={chip(forYou)}>
+            For you
+          </button>
+        </li>
 
-        {/* Your boards come right after All so they are always in view. */}
+        {/* Your boards come right after For you so they are always in view. */}
         {boards.length > 0 && (
           <li aria-hidden="true" className="mx-1 flex items-center gap-2 pl-1">
             <span className="text-[13px] font-semibold whitespace-nowrap text-ink/65">
@@ -81,7 +85,7 @@ export function TopicChips({ topic, boardId, boards, onTopic, onBoard }: TopicCh
         <li aria-hidden="true" className="mx-1 flex items-center">
           <span className="h-6 w-px bg-divider" />
         </li>
-        {FEED_TOPICS.slice(1).map((t) => (
+        {FEED_TOPICS.map((t) => (
           <li key={t.id}>
             <button
               type="button"

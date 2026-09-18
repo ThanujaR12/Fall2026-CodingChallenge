@@ -2,17 +2,21 @@
 // or focus, title and credit below.
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
-import { ArrowUpRight } from '@phosphor-icons/react';
+import { ArrowUpRight, Sparkle } from '@phosphor-icons/react';
 import { ImageCredit } from '@/components/ImageCredit';
 import type { SearchResult } from '@/types/api';
 
 /** Height of the title + credit block under each image (must match the markup below). */
 export const PIN_CAPTION_HEIGHT = 50;
+/** Caption height when a "why you're seeing this" line is shown too. */
+export const PIN_CAPTION_HEIGHT_WITH_REASON = 70;
 
 type PinCardProps = {
   result: SearchResult;
   imageHeight: number;
   renderSaveAction: (result: SearchResult) => ReactNode;
+  /** Show why the photo was picked (For you). */
+  showReason?: boolean;
 };
 
 // Shown on hover and keyboard focus (and while the Save picker is open).
@@ -21,7 +25,7 @@ const hoverReveal =
 // Touch screens have no hover, so Save is always visible there.
 const alwaysOnTouch = `${hoverReveal} pointer-coarse:opacity-100`;
 
-export function PinCard({ result, imageHeight, renderSaveAction }: PinCardProps) {
+export function PinCard({ result, imageHeight, renderSaveAction, showReason }: PinCardProps) {
   const [failed, setFailed] = useState(false);
 
   return (
@@ -71,13 +75,22 @@ export function PinCard({ result, imageHeight, renderSaveAction }: PinCardProps)
           <ArrowUpRight size={14} aria-hidden="true" />
         </a>
       </div>
-      <div className="px-1 pt-2" style={{ height: PIN_CAPTION_HEIGHT }}>
+      <div
+        className="px-1 pt-2"
+        style={{ height: showReason ? PIN_CAPTION_HEIGHT_WITH_REASON : PIN_CAPTION_HEIGHT }}
+      >
         <h3 className="truncate text-[14px] leading-snug font-semibold">{result.title}</h3>
         <ImageCredit
           creatorName={result.creatorName}
           pageUrl={result.pageUrl}
           className="truncate"
         />
+        {showReason && result.reason && (
+          <p className="mt-0.5 flex items-center gap-1 truncate text-[12px] font-semibold text-accent-deep">
+            <Sparkle size={12} weight="fill" aria-hidden="true" />
+            {result.reason}
+          </p>
+        )}
       </div>
     </article>
   );

@@ -1,8 +1,9 @@
-// Home: a Pinterest-style board of popular photos, filtered by topic chips (search is in the header).
-// Your boards sit in the same chip row; picking one shows recommended photos to add to it.
+// Home: "For you" by default (a feed that learns from what you save, fresh every visit), with your
+// boards and the topics in the same chip row (Popular, Nature…); search is in the header.
 import { useEffect } from 'react';
 import { useSearchParams } from 'react-router';
 import { PageContainer } from '@/components/PageContainer';
+import { ForYouFeed } from '@/features/feed/ForYouFeed';
 import { ImageFeed } from '@/features/feed/ImageFeed';
 import { TopicChips } from '@/features/feed/TopicChips';
 import { useCollections } from '@/features/collections/useCollections';
@@ -20,7 +21,8 @@ const renderSaveAction = (result: SearchResult) => (
 export function HomePage() {
   const [params, setParams] = useSearchParams();
   const raw = params.get('topic');
-  const topic: FeedTopic = isFeedTopic(raw) ? raw : 'all';
+  // No topic (and no board) in the address means the personal "For you" feed.
+  const topic: FeedTopic | null = isFeedTopic(raw) ? raw : null;
   const collections = useCollections();
   // Boards you can add to: your own, then shared ones where you're an editor.
   const boards = [
@@ -28,19 +30,24 @@ export function HomePage() {
     ...(collections.data?.shared ?? []).filter((b) => b.role === 'editor'),
   ];
   const board = boards.find((b) => b.id === params.get('board')) ?? null;
-  const feed = useFeed(topic, null, !board);
-  const label = FEED_TOPICS.find((t) => t.id === topic)?.label ?? 'All';
+  const feed = useFeed(topic ?? 'all', null, Boolean(topic) && !board);
+  const label = FEED_TOPICS.find((t) => t.id === topic)?.label ?? 'For you';
 
   useEffect(() => {
     document.title = board
       ? `Ideas for ${board.name} · ${APP_NAME}`
-      : topic === 'all'
-        ? `Home · ${APP_NAME}`
-        : `${label} · ${APP_NAME}`;
+      : topic
+        ? `${label} · ${APP_NAME}`
+        : `Home · ${APP_NAME}`;
   }, [board, topic, label]);
 
   function changeTopic(next: FeedTopic) {
-    setParams(next === 'all' ? {} : { topic: next });
+    setParams({ topic: next });
+    window.scrollTo({ top: 0 });
+  }
+
+  function showForYou() {
+    setParams({});
     window.scrollTo({ top: 0 });
   }
 
@@ -56,6 +63,8 @@ export function HomePage() {
       <div className="sticky top-16 z-20 -mx-4 bg-paper/95 px-4 pt-1 pb-4 backdrop-blur md:-mx-10 md:px-10">
         <TopicChips
           topic={board ? null : topic}
+          forYou={!board && !topic}
+          onForYou={showForYou}
           boardId={board?.id ?? null}
           boards={boards}
           onTopic={changeTopic}
@@ -73,13 +82,15 @@ export function HomePage() {
             showOpenLink
           />
         </div>
-      ) : (
+      ) : topic ? (
         <ImageFeed
           key={topic}
           feed={feed}
           label={topic === 'all' ? 'Popular photos' : `${label} photos`}
           renderSaveAction={renderSaveAction}
         />
+      ) : (
+        <ForYouFeed />
       )}
     </PageContainer>
   );

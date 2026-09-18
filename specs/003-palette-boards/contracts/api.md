@@ -5,6 +5,7 @@ The full, authoritative reference (request/response shapes, errors, curl example
 
 | Method & path | Auth | Purpose |
 |---------------|------|---------|
+| `GET /feed/for-you?page=&seed=` | token | Personal feed learned from what you save |
 | `GET /feed?topic=&color=&page=` | none | Home feed: popular photos per topic, optional colour |
 | `GET /search/images?q=&color=&page=` | none | Adds the optional `color` filter |
 | `GET /photos/:sourceId` | none | One photo with a large version and its colours |

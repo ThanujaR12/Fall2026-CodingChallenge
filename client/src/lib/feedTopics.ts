@@ -1,6 +1,6 @@
 // Home-feed topics shown as chips; ids match the server's GET /api/feed topics.
 export const FEED_TOPICS = [
-  { id: 'all', label: 'All' },
+  { id: 'all', label: 'Popular' },
   { id: 'nature', label: 'Nature' },
   { id: 'travel', label: 'Travel' },
   { id: 'food', label: 'Food' },

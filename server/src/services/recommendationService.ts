@@ -47,6 +47,11 @@ const GENERIC_TAGS = new Set([
   'view',
 ]);
 
+/** True for tags too common to say anything about someone's taste (e.g. "nature"). */
+export function isGenericTag(tag: string): boolean {
+  return GENERIC_TAGS.has(tag.trim().toLowerCase());
+}
+
 /** The board's most common tags, most frequent first (ties keep the newest photos' order). */
 export function topTags(itemTags: string[][], limit = 3): string[] {
   const counts = new Map<string, number>();

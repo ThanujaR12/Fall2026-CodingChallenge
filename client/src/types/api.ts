@@ -10,6 +10,8 @@ export type SearchResult = {
   thumbnailUrl: string;
   width: number;
   height: number;
+  /** Why a "For you" photo was picked, e.g. "Because you save harbor photos". */
+  reason?: string | null;
 };
 
 export type SearchResponse = {
@@ -110,6 +112,14 @@ export type CollectionDetail = CollectionSummary & {
 export type SharedView = CollectionSummary & { owner: PublicUser; items: SavedItem[] };
 
 export type Visibility = 'private' | 'public';
+
+export type ForYouResponse = {
+  personalized: boolean;
+  interests: string[];
+  results: SearchResult[];
+  page: number;
+  hasMore: boolean;
+};
 
 export type RecommendationsResponse = SearchResponse & { basedOn: string[] };
 

@@ -6,7 +6,7 @@ import { MasonryGrid } from '@/components/MasonryGrid';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import type { SearchResult } from '@/types/api';
-import { PIN_CAPTION_HEIGHT, PinCard } from './PinCard';
+import { PIN_CAPTION_HEIGHT, PIN_CAPTION_HEIGHT_WITH_REASON, PinCard } from './PinCard';
 
 /** The parts of a TanStack infinite query the feed needs. */
 export type FeedQuery = {
@@ -25,11 +25,13 @@ type ImageFeedProps = {
   feed: FeedQuery;
   label: string;
   renderSaveAction: (result: SearchResult) => ReactNode;
+  /** Show each photo's "why you're seeing this" reason (For you). */
+  showReasons?: boolean;
 };
 
 const SKELETON_HEIGHTS = [260, 340, 220, 300, 380, 240, 320, 280, 230, 360, 270, 310];
 
-export function ImageFeed({ feed, label, renderSaveAction }: ImageFeedProps) {
+export function ImageFeed({ feed, label, renderSaveAction, showReasons }: ImageFeedProps) {
   const sentinelRef = useRef<HTMLDivElement>(null);
   const { hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage } = feed;
 
@@ -83,9 +85,14 @@ export function ImageFeed({ feed, label, renderSaveAction }: ImageFeedProps) {
         label={label}
         getKey={(result) => result.sourceId}
         getRatio={(result) => result.height / result.width}
-        captionHeight={PIN_CAPTION_HEIGHT}
+        captionHeight={showReasons ? PIN_CAPTION_HEIGHT_WITH_REASON : PIN_CAPTION_HEIGHT}
         renderItem={(result, imageHeight) => (
-          <PinCard result={result} imageHeight={imageHeight} renderSaveAction={renderSaveAction} />
+          <PinCard
+            result={result}
+            imageHeight={imageHeight}
+            renderSaveAction={renderSaveAction}
+            showReason={showReasons}
+          />
         )}
       />
 

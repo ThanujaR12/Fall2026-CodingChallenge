@@ -50,6 +50,8 @@ export function useSaveItem() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.collection(vars.collectionId) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.activity(vars.collectionId) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.profile });
+      // Your For you feed learns from this save the next time Home is shown.
+      void queryClient.invalidateQueries({ queryKey: ['for-you'], refetchType: 'none' });
       // Marked stale but not refetched now, so the tile just added keeps its "Added" state.
       void queryClient.invalidateQueries({
         queryKey: ['recommendations', vars.collectionId],
