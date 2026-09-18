@@ -162,6 +162,20 @@ As a browser, I click any photo to see it large, its colours, and photos like it
 3. **Given** a similar photo, **When** I click it, **Then** its own page opens at the top.
 4. A "Mostly <colour>" card links to more photos in that colour on Palettes.
 
+### User Story 12 - Search with a photo (Priority: P2)
+
+As a browser, I take or upload a photo and find photos like it.
+
+**Acceptance Scenarios**:
+
+1. **Given** the search bar, **When** I tap the camera, **Then** I can take a photo (webcam or phone
+   camera) or upload / drop one.
+2. **Given** a photo, **When** it is analysed (with a scanning animation), **Then** I see what was
+   recognised ("golden retriever 39%, Labrador retriever 35%"), its colours, and matching photos.
+3. **Given** a wrong guess, **When** I pick another, **Then** the results follow it; "Same colours"
+   narrows them to the photo's leading colour.
+4. The photo never leaves the device; only the recognised words are searched.
+
 ### Edge Cases
 
 - An image whose colors can't be read still saves; its board simply has fewer colors.
@@ -196,6 +210,8 @@ As a browser, I click any photo to see it large, its colours, and photos like it
   already on it, with one-tap Add for editors.
 - **FR-015**: Every photo tile MUST open a photo page with its colours and "More like this",
   switchable between the same subject and the same colours.
+- **FR-016**: The search bar MUST offer search with a photo (camera or upload), recognising the
+  photo on the device and never uploading it.
 
 ### Key Entities
 

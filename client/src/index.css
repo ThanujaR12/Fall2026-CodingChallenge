@@ -180,3 +180,24 @@
     color: rgba(32, 30, 29, 0.65);
   }
 }
+
+/* "Search with a photo": a soft light sweeping down the photo while it is recognised. */
+@keyframes pixboard-scan {
+  from {
+    top: -6rem;
+  }
+  to {
+    top: 100%;
+  }
+}
+
+.pixboard-scan {
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(214, 0, 108, 0.28) 70%,
+    rgba(255, 255, 255, 0.9) 96%,
+    transparent
+  );
+  animation: pixboard-scan 1.6s ease-in-out infinite;
+}

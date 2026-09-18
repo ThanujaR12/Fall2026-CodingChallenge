@@ -69,6 +69,10 @@ against a throwaway in-memory copy of the app (screenshots and scripted checks).
 - [X] T025 [US11] `GET /api/photos/:sourceId` (with colours from the preview, cached) and `/similar?by=subject|color`; tests; API.md
 - [X] T026 [US11] Photo page: large image, colours, tags, Save, "Mostly <colour>" card, "More like this" with Same subject / Same colours; every feed tile opens it; grid drops repeated photos
 
+## Phase 7d: Search with a photo (US12)
+
+- [X] T027 [US12] Camera button in the search bar; dialog to take (webcam / phone camera), upload, or drop a photo; on-device MobileNet recognition and colour reading with a scanning animation; results page with guess chips, colours, and Same subject / Same colours
+
 ## Phase 8: Polish
 
 - [ ] T021 README.txt: features tour, setup, live link

@@ -56,3 +56,16 @@
 
 - **Decision**: Browser Web Speech API (`SpeechRecognition` / `webkitSpeechRecognition`), hidden when
   unsupported. No audio reaches PixBoard's server.
+
+## R10: Search with a photo
+
+- **Decision**: Recognise photos in the browser with TensorFlow.js MobileNet v2 (ImageNet labels),
+  loaded only when the camera is first opened; read colours from a 64×64 canvas; search Pixabay for
+  the chosen label (optionally in the photo's leading colour).
+- **Why**: The photo never leaves the device, there is no API key or cost, and nothing extra for
+  reviewers to configure. Model weights (~14 MB) come from TF Hub / Kaggle storage, which allows
+  cross-origin loading, and are cached by the browser after the first use.
+- **Rejected**: Sending photos to a hosted vision model (better scene understanding, but a paid key
+  on the server and users' photos leaving their device).
+- **Evidence**: A golden retriever puppy photo → "golden retriever 39%, Labrador retriever 35%" in
+  about 2 s (model cached); 40 matching photos, the first being the same photo.
