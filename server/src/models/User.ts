@@ -8,8 +8,10 @@ const userSchema = new Schema(
     usernameKey: { type: String, required: true },
     // The stand-in has no email, so uniqueness only applies when one is set.
     email: { type: String, trim: true, lowercase: true },
-    // Never returned by default; only login reads it explicitly.
+    // Never returned by default; only login reads it explicitly. Absent for Google-only accounts.
     passwordHash: { type: String, select: false },
+    // Google's stable id for the person, set when they use "Continue with Google".
+    googleId: { type: String },
     // Marks the single built-in owner used before real accounts existed (Feature 1).
     isStandIn: { type: Boolean, default: false },
   },
@@ -20,6 +22,11 @@ userSchema.index({ usernameKey: 1 }, { unique: true });
 userSchema.index(
   { email: 1 },
   { unique: true, partialFilterExpression: { email: { $type: 'string' } } },
+);
+
+userSchema.index(
+  { googleId: 1 },
+  { unique: true, partialFilterExpression: { googleId: { $type: 'string' } } },
 );
 
 export type UserDoc = InferSchemaType<typeof userSchema>;

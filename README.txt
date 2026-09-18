@@ -17,6 +17,7 @@ give them your own titles and notes, and find them again later.
   - Open a saved image to see it larger, edit its title and note, or remove it
   - Rename or delete collections (deleting asks for confirmation)
   - Accounts: sign up, log in with username or email, stay signed in for 7 days
+  - "Continue with Google" sign-in (see note below)
   - Share a read-only link to any collection (no account needed to view), and turn
     it off at any time - the old link stops working immediately
   - Invite other users as editors (add, edit, remove images) or viewers (look only);
@@ -91,13 +92,18 @@ Commands are one per line so they work in bash, zsh, cmd, and Windows PowerShell
    created before accounts existed.) To try collaboration, sign up a second
    account in a private window and invite it from a collection's Share button.
 
+Google sign-in: the Google project is in "Testing" mode, so "Continue with Google" only
+works for Google accounts the author added as test users. Everyone else can sign up with
+a username and password, which has every feature. (The Google client id in the
+.env.example files is public by design; there is no secret to configure.)
+
 Quick check that the API is up:  http://localhost:4000/api/health  shows {"status":"ok"}
 
 
 TESTS AND CODE CHECKS
 ---------------------
 In server/:
-   npm test               (136 tests; no API keys needed, uses an in-memory database)
+   npm test               (143 tests; no API keys needed, uses an in-memory database)
    npm run lint
    npm run format:check
 

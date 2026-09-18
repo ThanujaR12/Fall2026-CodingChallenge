@@ -15,6 +15,7 @@
 - Q: Can editors and viewers see who else is a member of a shared collection? → A: Yes — every member sees the member list (usernames and roles) read-only; only the owner can change it.
 - Q: When someone who is signed in but not a member opens a share link, what can they do? → A: The same read-only view as any link visitor; they cannot save or edit, and the board does not appear in their "Shared with me".
 - Q: Who can see and copy an active share link? → A: Only the owner sees the share controls and the link; editors and viewers do not.
+- Q: (Added 2026-09-17 at the author's request) Should people be able to sign in with Google? → A: Yes, as an extra option next to username/password, for the web app only. While the Google project is in Testing mode, only Google accounts added as test users can use it; everyone else signs up with a password.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -175,6 +176,22 @@ As an editor or viewer, I remove myself from a collection I no longer need.
 
 ---
 
+### User Story 7 - Continue with Google (Priority: P2)
+
+As a user, I sign up or sign in with my Google account instead of creating a password.
+
+**Why this priority**: Makes the app quicker to start using; username/password already covers every requirement.
+
+**Independent Test**: On the sign-in screen, choose Continue with Google, pick a Google account, and land in My collections; sign out and do it again to reach the same account.
+
+**Acceptance Scenarios**:
+
+1. **Given** no account uses my Google email, **When** I continue with Google, **Then** an account is created (username based on my email) and I am signed in.
+2. **Given** an account already uses my Google email, **When** I continue with Google, **Then** I am signed in to that same account.
+3. **Given** Google does not confirm my identity, or my Google email is unverified, **When** I try, **Then** I see "Google sign-in didn't work. Please try again." and I am not signed in.
+
+---
+
 ### Edge Cases
 
 - Usernames and emails are unique ignoring capitalization; signing in accepts any capitalization.
@@ -258,6 +275,13 @@ As an editor or viewer, I remove myself from a collection I no longer need.
 - **FR-023**: The save picker MUST list collections the user owns or can edit.
 - **FR-024**: When two members edit the same item, the most recent save MUST win without errors.
 
+**Sign in with Google** (User Story 7)
+
+- **FR-025**: The sign-in and sign-up screens MUST offer "Continue with Google" when Google sign-in is configured, and hide it otherwise.
+- **FR-026**: The system MUST confirm every Google sign-in with Google before trusting it, and MUST accept only verified Google emails.
+- **FR-027**: A Google sign-in MUST reuse the account with the same Google identity or email, or create a new account with a unique username derived from the email; the first account ever created still receives Feature 1 data (FR-009).
+- **FR-028**: Accounts created with Google have no password; password sign-in for them fails with the same generic message.
+
 ### Key Entities *(include if feature involves data)*
 
 - **User (account)**: username (unique, case-insensitive), email (unique, case-insensitive),
@@ -283,8 +307,8 @@ As an editor or viewer, I remove myself from a collection I no longer need.
 
 ## Assumptions
 
-- Sign-in uses username/email and password only; no password reset, email verification, or social
-  sign-in (out of scope per the feature description).
+- Sign-in uses username/email and password, plus "Continue with Google" (User Story 7, added at the
+  author's request); no password reset, email verification, or other social sign-in.
 - Invitations take effect immediately; there is no accept/decline step and no email is sent.
 - Only existing accounts can be invited; inviting by email does not create accounts.
 - Sessions last 7 days; there is no "remember me" option.

@@ -27,5 +27,12 @@ export const loginBody = z.object({
   password: z.string({ error: 'Enter your password.' }).min(1, 'Enter your password.'),
 });
 
+export const googleBody = z.object({
+  credential: z
+    .string({ error: 'Missing Google credential.' })
+    .min(20, 'Missing Google credential.'),
+});
+
+export type GoogleBody = z.infer<typeof googleBody>;
 export type RegisterBody = z.infer<typeof registerBody>;
 export type LoginBody = z.infer<typeof loginBody>;

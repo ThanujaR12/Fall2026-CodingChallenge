@@ -8,6 +8,8 @@ const envSchema = z.object({
   PIXABAY_API_KEY: z.string().min(1),
   // Signs session tokens; anyone with it could forge a sign-in, so it lives only in server/.env.
   JWT_SECRET: z.string().min(16, 'JWT_SECRET must be at least 16 characters'),
+  // Public OAuth client id for "Continue with Google"; leave empty to turn Google sign-in off.
+  GOOGLE_CLIENT_ID: z.string().optional().default(''),
   CLIENT_ORIGIN: z.url().default('http://localhost:5173'),
   NODE_ENV: z.string().default('development'),
 });

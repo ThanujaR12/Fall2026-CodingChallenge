@@ -7,6 +7,7 @@ export type AuthState = {
   status: 'loading' | 'signedIn' | 'signedOut';
   login: (usernameOrEmail: string, password: string) => Promise<void>;
   register: (username: string, email: string, password: string) => Promise<void>;
+  loginWithGoogle: (credential: string) => Promise<void>;
   logout: () => void;
 };
 

@@ -35,6 +35,8 @@ Every error response has this shape:
 | 400    | `CANNOT_LEAVE_OWN_COLLECTION` | The owner tried to leave (owners delete instead)                    |
 | 401    | `UNAUTHENTICATED`             | Missing, invalid, or expired token                                  |
 | 401    | `INVALID_CREDENTIALS`         | Wrong username/email or password (same message for both)            |
+| 401    | `GOOGLE_SIGN_IN_FAILED`       | Google did not confirm the sign-in, or the email is unverified      |
+| 503    | `GOOGLE_SIGN_IN_DISABLED`     | Google sign-in is not configured on the server                      |
 | 403    | `FORBIDDEN`                   | You can see the collection, but your role doesn't allow the action  |
 | 404    | `COLLECTION_NOT_FOUND`        | Collection missing, or you are not its owner or a member            |
 | 404    | `USER_NOT_FOUND`              | No account matches the invited username or email                    |
@@ -174,6 +176,25 @@ curl -X POST http://localhost:4000/api/auth/register \
 curl -X POST http://localhost:4000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"usernameOrEmail":"alice","password":"password123"}'
+```
+
+### `POST /auth/google`
+
+"Continue with Google". The client gets a credential from Google's sign-in button and sends it
+here; the server confirms it with Google, then signs the person in. The same Google account always
+reaches the same PixBoard account; an existing account with the same (Google-verified) email is
+linked; otherwise a new account is created with a username based on the email (e.g. `thanuja_r`).
+Google-only accounts have no password.
+
+- **Auth**: public
+- **Body**: `{ "credential": "<Google ID token>" }`
+- **Response 200**: `{ "token": "<jwt>", "user": AuthUser }`
+- **Errors**: `400 VALIDATION_ERROR`, `401 GOOGLE_SIGN_IN_FAILED` (Google did not confirm it, or
+  the email is unverified), `503 GOOGLE_SIGN_IN_DISABLED` (no `GOOGLE_CLIENT_ID` configured)
+
+```bash
+curl -X POST http://localhost:4000/api/auth/google \
+  -H "Content-Type: application/json" -d '{"credential":"<credential from Google>"}'
 ```
 
 ### `GET /auth/me`

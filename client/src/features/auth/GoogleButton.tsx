@@ -1,0 +1,115 @@
+// "Continue with Google": Google's official button; its credential is exchanged for a PixBoard session.
+import { useEffect, useRef, useState } from 'react';
+import { ApiError } from '@/api/client';
+import { FormError } from './FormError';
+import { useAuth } from './useAuth';
+
+const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '';
+const SCRIPT_SRC = 'https://accounts.google.com/gsi/client';
+
+// The small part of Google Identity Services this component uses.
+type GoogleIdentity = {
+  accounts: {
+    id: {
+      initialize: (options: {
+        client_id: string;
+        callback: (response: { credential?: string }) => void;
+      }) => void;
+      renderButton: (element: HTMLElement, options: Record<string, unknown>) => void;
+    };
+  };
+};
+
+declare global {
+  interface Window {
+    google?: GoogleIdentity;
+  }
+}
+
+// Loads Google's script once, no matter how many times the button mounts.
+let scriptPromise: Promise<void> | null = null;
+function loadGoogleScript(): Promise<void> {
+  if (window.google?.accounts?.id) return Promise.resolve();
+  scriptPromise ??= new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = SCRIPT_SRC;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => {
+      scriptPromise = null;
+      reject(new Error('Could not load Google sign-in.'));
+    };
+    document.head.appendChild(script);
+  });
+  return scriptPromise;
+}
+
+export function GoogleButton({ onSuccess }: { onSuccess: () => void }) {
+  const { loginWithGoogle } = useAuth();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  // Keep the latest handlers without re-rendering Google's button on every render.
+  const handlers = useRef({ loginWithGoogle, onSuccess });
+  useEffect(() => {
+    handlers.current = { loginWithGoogle, onSuccess };
+  });
+
+  useEffect(() => {
+    if (!CLIENT_ID) return;
+    let cancelled = false;
+
+    loadGoogleScript()
+      .then(() => {
+        const container = containerRef.current;
+        if (cancelled || !container || !window.google) return;
+        window.google.accounts.id.initialize({
+          client_id: CLIENT_ID,
+          callback: async ({ credential }) => {
+            if (!credential) return;
+            setError(null);
+            try {
+              await handlers.current.loginWithGoogle(credential);
+              handlers.current.onSuccess();
+            } catch (err) {
+              setError(
+                err instanceof ApiError
+                  ? err.message
+                  : "Google sign-in didn't work. Please try again.",
+              );
+            }
+          },
+        });
+        window.google.accounts.id.renderButton(container, {
+          theme: 'outline',
+          size: 'large',
+          text: 'continue_with',
+          shape: 'rectangular',
+          logo_alignment: 'center',
+          width: Math.min(container.clientWidth || 380, 400),
+        });
+      })
+      .catch(() => {
+        if (!cancelled)
+          setError("Google sign-in isn't available right now. Use your username and password.");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // No client id configured: hide Google sign-in entirely (FR-025).
+  if (!CLIENT_ID) return null;
+
+  return (
+    <div className="grid gap-3">
+      <div className="flex items-center gap-3 text-[13px] text-ink/65" aria-hidden="true">
+        <span className="h-px flex-1 bg-divider" />
+        or
+        <span className="h-px flex-1 bg-divider" />
+      </div>
+      <div ref={containerRef} className="flex min-h-11 justify-center" />
+      {error && <FormError message={error} />}
+    </div>
+  );
+}

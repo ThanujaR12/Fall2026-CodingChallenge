@@ -11,6 +11,7 @@ export default defineConfig({
       MONGODB_URI: 'mongodb://127.0.0.1:27017/unused-in-tests',
       PIXABAY_API_KEY: 'test-pixabay-key',
       JWT_SECRET: 'test-jwt-secret-at-least-16-chars',
+      GOOGLE_CLIENT_ID: 'test-client-id.apps.googleusercontent.com',
       CLIENT_ORIGIN: 'http://localhost:5173',
     },
     testTimeout: 30000,

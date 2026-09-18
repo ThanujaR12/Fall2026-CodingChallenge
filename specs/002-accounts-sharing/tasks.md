@@ -128,6 +128,17 @@ SC-003). Client verified with quickstart scenarios A1–A5.
 
 ---
 
+## Phase 10: US7 — Continue with Google (P2, added at the author's request)
+
+- [X] T047 Install `google-auth-library` in `server/`; add optional `GOOGLE_CLIENT_ID` to `server/src/config/env.ts`, `server/.env.example`, and local `server/.env`; add `googleId` (unique sparse) to `server/src/models/User.ts`
+- [X] T048 [P] [US7] `server/src/services/googleService.ts`: `verifyGoogleCredential(credential)` using `OAuth2Client.verifyIdToken({ audience: GOOGLE_CLIENT_ID })`, returning `{ googleId, email, name }` only when `email_verified`; otherwise 401 `GOOGLE_SIGN_IN_FAILED`; 503 `GOOGLE_SIGN_IN_DISABLED` when not configured
+- [X] T049 [US7] `authService.loginWithGoogle` (match `googleId`, else link by email, else create with a unique username from the email local part; first-account data transfer), `POST /auth/google` `{ credential }` route + controller + zod schema; document in `server/API.md`
+- [X] T050 [P] [US7] `server/tests/google.test.ts` with `googleService` mocked: new user created and signed in; same Google id signs into the same account; existing email is linked; unverified/invalid → 401; username collision gets a suffix; Google-only account cannot use password login
+- [X] T051 [US7] Client: `VITE_GOOGLE_CLIENT_ID` in `client/.env.example` and `client/.env`; `client/src/features/auth/GoogleButton.tsx` loads Google Identity Services, renders the official button, posts the credential via `loginWithGoogle` in `AuthProvider`; shown on both Log in and Sign up with an "or" divider; hidden when no client id
+- [X] T052 Update `README.txt` (Google sign-in note, test-user limitation) and run lint/format/tests/build
+
+---
+
 ## Dependencies
 
 Setup → Foundational → US1 → US2 → US3 → US4 → US5 → US6 → Polish. US3 and US4 touch different

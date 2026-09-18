@@ -1,4 +1,5 @@
-// Accounts: password hashing, session tokens, sign-up (with Feature 1 data transfer), and sign-in.
+// Accounts: password hashing, session tokens, sign-up (with Feature 1 data transfer), sign-in,
+// and "Continue with Google".
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
@@ -6,6 +7,7 @@ import { Collection } from '../models/Collection.js';
 import { SavedItem } from '../models/SavedItem.js';
 import { User } from '../models/User.js';
 import { AppError } from '../utils/AppError.js';
+import { verifyGoogleCredential } from './googleService.js';
 import { getStandInUserId } from './userService.js';
 
 const SESSION_LENGTH = '7d';
@@ -45,22 +47,69 @@ export async function register(input: RegisterInput) {
     });
   }
 
-  const isFirstAccount = !(await User.exists({ isStandIn: false }));
-  const user = await User.create({
+  return createAccount({
     username: input.username,
     usernameKey,
     email,
     passwordHash: await hashPassword(input.password),
   });
+}
 
-  // The first account inherits everything made before accounts existed (Feature 1 stand-in data).
+// Creates the user; the very first account also inherits Feature 1 (stand-in) data.
+async function createAccount(fields: {
+  username: string;
+  usernameKey: string;
+  email: string;
+  passwordHash?: string;
+  googleId?: string;
+}) {
+  const isFirstAccount = !(await User.exists({ isStandIn: false }));
+  const user = await User.create(fields);
+
   if (isFirstAccount) {
     const standIn = getStandInUserId();
     await Collection.updateMany({ owner: standIn }, { $set: { owner: user._id } });
     await SavedItem.updateMany({ addedBy: standIn }, { $set: { addedBy: user._id } });
   }
-
   return user;
+}
+
+// Builds a free username from an email, e.g. "thanuja.r@gmail.com" -> "thanuja_r" (or "thanuja_r2").
+async function usernameFromEmail(email: string): Promise<string> {
+  let base = email
+    .split('@')[0]
+    .replace(/[^A-Za-z0-9_]/g, '_')
+    .slice(0, 25);
+  if (base.length < 3) base = `${base}user`.slice(0, 25);
+  let candidate = base;
+  for (let n = 2; await User.exists({ usernameKey: candidate.toLowerCase() }); n += 1) {
+    candidate = `${base}${n}`;
+  }
+  return candidate;
+}
+
+// "Continue with Google": the same person always reaches the same account.
+export async function loginWithGoogle(credential: string) {
+  const profile = await verifyGoogleCredential(credential);
+
+  const byGoogleId = await User.findOne({ googleId: profile.googleId });
+  if (byGoogleId) return byGoogleId;
+
+  // Google has verified this email, so an existing account with it is theirs: link it.
+  const byEmail = await User.findOne({ email: profile.email, isStandIn: false });
+  if (byEmail) {
+    byEmail.googleId = profile.googleId;
+    await byEmail.save();
+    return byEmail;
+  }
+
+  const username = await usernameFromEmail(profile.email);
+  return createAccount({
+    username,
+    usernameKey: username.toLowerCase(),
+    email: profile.email,
+    googleId: profile.googleId,
+  });
 }
 
 // Same error for an unknown user and a wrong password, so sign-in never reveals which accounts exist.

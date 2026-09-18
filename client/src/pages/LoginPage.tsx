@@ -1,6 +1,7 @@
 // Log in / Sign up screen (design 01): forms on the left, what the app does on the right.
 import { useEffect } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router';
+import { GoogleButton } from '@/features/auth/GoogleButton';
 import { LoginForm } from '@/features/auth/LoginForm';
 import { SignupForm } from '@/features/auth/SignupForm';
 import { useAuth } from '@/features/auth/useAuth';
@@ -79,6 +80,10 @@ export function LoginPage() {
           ) : (
             <LoginForm onSuccess={() => navigate(next, { replace: true })} />
           )}
+
+          <div className="mt-5">
+            <GoogleButton onSuccess={() => navigate(next, { replace: true })} />
+          </div>
 
           <p className="mt-6 text-[14px] text-ink/75">
             {mode === 'signup' ? (
