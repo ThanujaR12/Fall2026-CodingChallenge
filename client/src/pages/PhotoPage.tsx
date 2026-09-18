@@ -71,7 +71,7 @@ function MoreLikeThis({
             </p>
           )}
         </div>
-        {/* PixBoard's twist: match what the photo shows, or the colours it's made of. */}
+        {/* PaletteBoard's twist: match what the photo shows, or the colours it's made of. */}
         <div
           role="group"
           aria-label="Match by"

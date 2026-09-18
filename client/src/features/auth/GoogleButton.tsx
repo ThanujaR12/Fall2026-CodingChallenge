@@ -141,8 +141,8 @@ export function GoogleButton({ mode, onSuccess, onNeedsAccount }: Props) {
           className="grid gap-3 border border-divider bg-surface p-4 text-[14px] text-ink"
         >
           <p>
-            <strong className="font-semibold">You don't have a PixBoard account yet.</strong> Create
-            one with this Google account to get started.
+            <strong className="font-semibold">You don't have a PaletteBoard account yet.</strong>{' '}
+            Create one with this Google account to get started.
           </p>
           <Button type="button" onClick={onNeedsAccount} className="justify-self-start">
             Create account

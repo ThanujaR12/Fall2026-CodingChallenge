@@ -108,7 +108,7 @@ export async function loginWithGoogle(credential: string, mode: 'login' | 'signu
     throw new AppError(
       404,
       'ACCOUNT_NOT_FOUND',
-      'No PixBoard account uses this Google account yet. Create one to get started.',
+      'No PaletteBoard account uses this Google account yet. Create one to get started.',
     );
   }
 

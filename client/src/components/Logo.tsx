@@ -1,8 +1,8 @@
-// PixBoard logo: a masonry "board" of four saved images beside the serif wordmark.
+// PaletteBoard logo: a board of four colour tiles (the palette swatches) beside the wordmark.
 import { APP_NAME } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
-/** The four-tile board mark on its own; decorative, so hidden from screen readers. */
+/** The palette-board mark on its own; decorative, so hidden from screen readers. */
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg
@@ -11,10 +11,11 @@ export function LogoMark({ className }: { className?: string }) {
       focusable="false"
       className={cn('size-6', className)}
     >
-      <rect x="0" y="0" width="25" height="32" fill="#201E1D" />
-      <rect x="27" y="0" width="25" height="18" fill="#007A9E" />
-      <rect x="0" y="34" width="25" height="18" fill="#C1663C" />
-      <rect x="27" y="20" width="25" height="32" fill="#D6006C" />
+      <rect width="52" height="52" rx="13" fill="#1F4750" />
+      <rect x="9" y="9" width="16" height="20" rx="3.5" fill="#12A5DB" />
+      <rect x="27" y="9" width="16" height="12" rx="3.5" fill="#5CD68D" />
+      <rect x="9" y="31" width="16" height="12" rx="3.5" fill="#FF8A4C" />
+      <rect x="27" y="23" width="16" height="20" rx="3.5" fill="#F0148C" />
     </svg>
   );
 }

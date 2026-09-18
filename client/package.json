@@ -2,7 +2,7 @@
   "name": "pixboard-client",
   "version": "1.0.0",
   "private": true,
-  "description": "PixBoard web client: search images and organize them into collections",
+  "description": "PaletteBoard web client: search images and organize them into collections",
   "type": "module",
   "scripts": {
     "dev": "vite",

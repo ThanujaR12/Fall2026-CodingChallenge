@@ -51,7 +51,7 @@ export function Sidebar() {
       >
         <Link
           to="/"
-          aria-label="PixBoard home"
+          aria-label="PaletteBoard home"
           className="mb-6 inline-flex size-12 items-center justify-center rounded-xl hover:bg-surface"
         >
           <LogoMark className="size-7" />

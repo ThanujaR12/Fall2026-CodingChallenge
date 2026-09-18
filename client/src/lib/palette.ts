@@ -6,7 +6,7 @@ export function copyPalette(palette: string[]) {
 }
 
 export function downloadPalette(name: string, palette: string[]) {
-  const text = [`${name} — PixBoard palette`, '', ...palette].join('\n');
+  const text = [`${name} — PaletteBoard palette`, '', ...palette].join('\n');
   const url = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
   const link = document.createElement('a');
   link.href = url;

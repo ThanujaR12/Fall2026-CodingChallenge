@@ -126,25 +126,25 @@ export function LoginPage() {
       </main>
 
       <aside
-        className="relative hidden overflow-hidden bg-ink px-14 text-paper md:flex md:items-center"
+        className="relative hidden overflow-hidden bg-[#1f4750] px-14 text-paper md:flex md:items-center"
         aria-label="About the app"
       >
         {/* Soft glows in the logo's colours. */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -top-40 -left-32 size-[520px] rounded-full bg-[#007a9e] opacity-40 blur-[120px]"
+          className="pointer-events-none absolute -top-40 -left-32 size-[520px] rounded-full bg-[#12a5db] opacity-40 blur-[120px]"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -right-40 -bottom-40 size-[520px] rounded-full bg-[#d6006c] opacity-35 blur-[120px]"
+          className="pointer-events-none absolute -right-40 -bottom-40 size-[520px] rounded-full bg-[#f0148c] opacity-35 blur-[120px]"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute top-1/2 right-10 size-[300px] rounded-full bg-[#c1663c] opacity-25 blur-[110px]"
+          className="pointer-events-none absolute top-1/2 right-10 size-[300px] rounded-full bg-[#ff8a4c] opacity-25 blur-[110px]"
         />
         <div className="relative max-w-[460px]">
           <div aria-hidden="true" className="mb-8 flex gap-2">
-            {['#007a9e', '#3a9d5d', '#c1663c', '#d6006c', '#faf8f6'].map((hex) => (
+            {['#12a5db', '#5cd68d', '#ff8a4c', '#f0148c', '#faf8f6'].map((hex) => (
               <span key={hex} className="h-2 w-10 rounded-full" style={{ backgroundColor: hex }} />
             ))}
           </div>

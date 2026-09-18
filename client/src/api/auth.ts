@@ -16,7 +16,7 @@ export function login(input: { usernameOrEmail: string; password: string }): Pro
 
 export type GoogleMode = 'login' | 'signup';
 
-/** Trades Google's sign-in credential for a PixBoard session; only "signup" may create an account. */
+/** Trades Google's sign-in credential for a PaletteBoard session; only "signup" may create an account. */
 export function loginWithGoogle(credential: string, mode: GoogleMode): Promise<AuthResponse> {
   return request<AuthResponse>('/auth/google', {
     method: 'POST',
