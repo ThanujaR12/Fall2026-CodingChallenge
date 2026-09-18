@@ -11,8 +11,8 @@ vi.mock('../src/services/googleService.js', () => ({ verifyGoogleCredential: vi.
 const app = createApp();
 const credential = 'a-google-credential-long-enough';
 
-function googleSignIn() {
-  return request(app).post('/api/auth/google').send({ credential });
+function googleSignIn(mode: 'login' | 'signup' = 'signup') {
+  return request(app).post('/api/auth/google').send({ credential, mode });
 }
 
 function asGoogleUser(googleId: string, email: string) {
@@ -86,6 +86,26 @@ describe('POST /api/auth/google', () => {
 
     expect(res.status).toBe(401);
     expect(res.body.error.code).toBe('INVALID_CREDENTIALS');
+  });
+
+  it('refuses to create an account from the Log in tab', async () => {
+    asGoogleUser('g-5', 'new.person@gmail.com');
+
+    const res = await googleSignIn('login');
+
+    expect(res.status).toBe(404);
+    expect(res.body.error.code).toBe('ACCOUNT_NOT_FOUND');
+    expect(await User.countDocuments({ email: 'new.person@gmail.com' })).toBe(0);
+  });
+
+  it('logs into an existing account from the Log in tab', async () => {
+    asGoogleUser('g-6', 'returning@gmail.com');
+    const created = await googleSignIn('signup');
+
+    const res = await googleSignIn('login');
+
+    expect(res.status).toBe(200);
+    expect(res.body.user.id).toBe(created.body.user.id);
   });
 
   it('requires a credential', async () => {

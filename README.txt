@@ -103,7 +103,7 @@ Quick check that the API is up:  http://localhost:4000/api/health  shows {"statu
 TESTS AND CODE CHECKS
 ---------------------
 In server/:
-   npm test               (143 tests; no API keys needed, uses an in-memory database)
+   npm test               (145 tests; no API keys needed, uses an in-memory database)
    npm run lint
    npm run format:check
 

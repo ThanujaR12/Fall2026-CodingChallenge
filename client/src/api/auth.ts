@@ -14,11 +14,13 @@ export function login(input: { usernameOrEmail: string; password: string }): Pro
   return request<AuthResponse>('/auth/login', { method: 'POST', body: JSON.stringify(input) });
 }
 
-/** Trades Google's sign-in credential for a PixBoard session. */
-export function loginWithGoogle(credential: string): Promise<AuthResponse> {
+export type GoogleMode = 'login' | 'signup';
+
+/** Trades Google's sign-in credential for a PixBoard session; only "signup" may create an account. */
+export function loginWithGoogle(credential: string, mode: GoogleMode): Promise<AuthResponse> {
   return request<AuthResponse>('/auth/google', {
     method: 'POST',
-    body: JSON.stringify({ credential }),
+    body: JSON.stringify({ credential, mode }),
   });
 }
 

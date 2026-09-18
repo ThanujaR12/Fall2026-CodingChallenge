@@ -28,28 +28,29 @@ Every error response has this shape:
 }
 ```
 
-| Status | Code                          | When                                                                |
-| ------ | ----------------------------- | ------------------------------------------------------------------- |
-| 400    | `VALIDATION_ERROR`            | Body, query, or params fail validation (or the JSON is malformed)   |
-| 400    | `CANNOT_INVITE_SELF`          | The owner tried to invite themselves                                |
-| 400    | `CANNOT_LEAVE_OWN_COLLECTION` | The owner tried to leave (owners delete instead)                    |
-| 401    | `UNAUTHENTICATED`             | Missing, invalid, or expired token                                  |
-| 401    | `INVALID_CREDENTIALS`         | Wrong username/email or password (same message for both)            |
-| 401    | `GOOGLE_SIGN_IN_FAILED`       | Google did not confirm the sign-in, or the email is unverified      |
-| 503    | `GOOGLE_SIGN_IN_DISABLED`     | Google sign-in is not configured on the server                      |
-| 403    | `FORBIDDEN`                   | You can see the collection, but your role doesn't allow the action  |
-| 404    | `COLLECTION_NOT_FOUND`        | Collection missing, or you are not its owner or a member            |
-| 404    | `USER_NOT_FOUND`              | No account matches the invited username or email                    |
-| 404    | `MEMBER_NOT_FOUND`            | That user isn't a member of the collection                          |
-| 404    | `SHARE_LINK_INACTIVE`         | The share link is unknown or has been turned off                    |
-| 404    | `ITEM_NOT_FOUND`              | Item missing or not in that collection                              |
-| 404    | `IMAGE_NOT_FOUND`             | Stored image missing, or the Pixabay image no longer exists         |
-| 404    | `ROUTE_NOT_FOUND`             | Unknown path                                                        |
-| 409    | `COLLECTION_NAME_TAKEN`       | Name matches another of your collections (ignoring case and spaces) |
-| 409    | `ITEM_ALREADY_SAVED`          | The image is already in that collection                             |
-| 409    | `USERNAME_TAKEN`              | Sign-up username already used (ignoring capitalization)             |
-| 409    | `EMAIL_TAKEN`                 | Sign-up email already used (ignoring capitalization)                |
-| 409    | `ALREADY_MEMBER`              | The invited user is already a member                                |
+| Status | Code                          | When                                                                 |
+| ------ | ----------------------------- | -------------------------------------------------------------------- |
+| 400    | `VALIDATION_ERROR`            | Body, query, or params fail validation (or the JSON is malformed)    |
+| 400    | `CANNOT_INVITE_SELF`          | The owner tried to invite themselves                                 |
+| 400    | `CANNOT_LEAVE_OWN_COLLECTION` | The owner tried to leave (owners delete instead)                     |
+| 401    | `UNAUTHENTICATED`             | Missing, invalid, or expired token                                   |
+| 401    | `INVALID_CREDENTIALS`         | Wrong username/email or password (same message for both)             |
+| 401    | `GOOGLE_SIGN_IN_FAILED`       | Google did not confirm the sign-in, or the email is unverified       |
+| 503    | `GOOGLE_SIGN_IN_DISABLED`     | Google sign-in is not configured on the server                       |
+| 403    | `FORBIDDEN`                   | You can see the collection, but your role doesn't allow the action   |
+| 404    | `COLLECTION_NOT_FOUND`        | Collection missing, or you are not its owner or a member             |
+| 404    | `ACCOUNT_NOT_FOUND`           | Google log-in for someone without a PixBoard account (sign up first) |
+| 404    | `USER_NOT_FOUND`              | No account matches the invited username or email                     |
+| 404    | `MEMBER_NOT_FOUND`            | That user isn't a member of the collection                           |
+| 404    | `SHARE_LINK_INACTIVE`         | The share link is unknown or has been turned off                     |
+| 404    | `ITEM_NOT_FOUND`              | Item missing or not in that collection                               |
+| 404    | `IMAGE_NOT_FOUND`             | Stored image missing, or the Pixabay image no longer exists          |
+| 404    | `ROUTE_NOT_FOUND`             | Unknown path                                                         |
+| 409    | `COLLECTION_NAME_TAKEN`       | Name matches another of your collections (ignoring case and spaces)  |
+| 409    | `ITEM_ALREADY_SAVED`          | The image is already in that collection                              |
+| 409    | `USERNAME_TAKEN`              | Sign-up username already used (ignoring capitalization)              |
+| 409    | `EMAIL_TAKEN`                 | Sign-up email already used (ignoring capitalization)                 |
+| 409    | `ALREADY_MEMBER`              | The invited user is already a member                                 |
 
 ## Roles and permissions
 
@@ -187,14 +188,16 @@ linked; otherwise a new account is created with a username based on the email (e
 Google-only accounts have no password.
 
 - **Auth**: public
-- **Body**: `{ "credential": "<Google ID token>" }`
+- **Body**: `{ "credential": "<Google ID token>", "mode": "login" | "signup" }` — `mode` defaults to
+  `login`, which only signs into an existing account; `signup` creates one if needed
 - **Response 200**: `{ "token": "<jwt>", "user": AuthUser }`
-- **Errors**: `400 VALIDATION_ERROR`, `401 GOOGLE_SIGN_IN_FAILED` (Google did not confirm it, or
+- **Errors**: `400 VALIDATION_ERROR`, `404 ACCOUNT_NOT_FOUND` (`login` mode and no account yet),
+  `401 GOOGLE_SIGN_IN_FAILED` (Google did not confirm it, or
   the email is unverified), `503 GOOGLE_SIGN_IN_DISABLED` (no `GOOGLE_CLIENT_ID` configured)
 
 ```bash
 curl -X POST http://localhost:4000/api/auth/google \
-  -H "Content-Type: application/json" -d '{"credential":"<credential from Google>"}'
+  -H "Content-Type: application/json" -d '{"credential":"<credential from Google>","mode":"login"}'
 ```
 
 ### `GET /auth/me`

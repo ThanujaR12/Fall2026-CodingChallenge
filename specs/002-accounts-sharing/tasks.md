@@ -136,6 +136,7 @@ SC-003). Client verified with quickstart scenarios A1–A5.
 - [X] T050 [P] [US7] `server/tests/google.test.ts` with `googleService` mocked: new user created and signed in; same Google id signs into the same account; existing email is linked; unverified/invalid → 401; username collision gets a suffix; Google-only account cannot use password login
 - [X] T051 [US7] Client: `VITE_GOOGLE_CLIENT_ID` in `client/.env.example` and `client/.env`; `client/src/features/auth/GoogleButton.tsx` loads Google Identity Services, renders the official button, posts the credential via `loginWithGoogle` in `AuthProvider`; shown on both Log in and Sign up with an "or" divider; hidden when no client id
 - [X] T052 Update `README.txt` (Google sign-in note, test-user limitation) and run lint/format/tests/build
+- [X] T053 Google "Log in" never creates an account: `mode` on `POST /api/auth/google`, `404 ACCOUNT_NOT_FOUND`, and a "Create account" prompt that switches to Sign up (FR-027)
 
 ---
 

@@ -18,8 +18,8 @@ export async function login(req: Request, res: Response) {
 }
 
 export async function google(req: Request, res: Response) {
-  const { credential } = req.body as GoogleBody;
-  const user = await authService.loginWithGoogle(credential);
+  const { credential, mode } = req.body as GoogleBody;
+  const user = await authService.loginWithGoogle(credential, mode);
   res.json({ token: authService.signToken(String(user._id)), user: toAuthUser(user) });
 }
 

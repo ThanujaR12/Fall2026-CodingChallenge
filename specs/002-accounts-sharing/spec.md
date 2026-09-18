@@ -16,6 +16,7 @@
 - Q: When someone who is signed in but not a member opens a share link, what can they do? → A: The same read-only view as any link visitor; they cannot save or edit, and the board does not appear in their "Shared with me".
 - Q: Who can see and copy an active share link? → A: Only the owner sees the share controls and the link; editors and viewers do not.
 - Q: (Added 2026-09-17 at the author's request) Should people be able to sign in with Google? → A: Yes, as an extra option next to username/password, for the web app only. While the Google project is in Testing mode, only Google accounts added as test users can use it; everyone else signs up with a password.
+- Q: (Added 2026-09-17 at the author's request) What happens when someone uses Google on the Log in screen but has no account? → A: No account is created; they see "You don't have a PixBoard account yet" with a Create account button that opens Sign up, where Google creates the account.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -186,7 +187,8 @@ As a user, I sign up or sign in with my Google account instead of creating a pas
 
 **Acceptance Scenarios**:
 
-1. **Given** no account uses my Google email, **When** I continue with Google, **Then** an account is created (username based on my email) and I am signed in.
+1. **Given** no account uses my Google email, **When** I continue with Google on the Sign up tab, **Then** an account is created (username based on my email) and I am signed in.
+4. **Given** no account uses my Google email, **When** I continue with Google on the Log in tab, **Then** no account is created and I see "No PixBoard account uses this Google account yet" with a button that takes me to Sign up.
 2. **Given** an account already uses my Google email, **When** I continue with Google, **Then** I am signed in to that same account.
 3. **Given** Google does not confirm my identity, or my Google email is unverified, **When** I try, **Then** I see "Google sign-in didn't work. Please try again." and I am not signed in.
 
@@ -279,7 +281,7 @@ As a user, I sign up or sign in with my Google account instead of creating a pas
 
 - **FR-025**: The sign-in and sign-up screens MUST offer "Continue with Google" when Google sign-in is configured, and hide it otherwise.
 - **FR-026**: The system MUST confirm every Google sign-in with Google before trusting it, and MUST accept only verified Google emails.
-- **FR-027**: A Google sign-in MUST reuse the account with the same Google identity or email, or create a new account with a unique username derived from the email; the first account ever created still receives Feature 1 data (FR-009).
+- **FR-027**: A Google sign-in MUST reuse the account with the same Google identity or email. Only from the Sign up screen MAY it create a new account with a unique username derived from the email; the first account ever created still receives Feature 1 data (FR-009).
 - **FR-028**: Accounts created with Google have no password; password sign-in for them fails with the same generic message.
 
 ### Key Entities *(include if feature involves data)*

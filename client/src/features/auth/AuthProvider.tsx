@@ -67,8 +67,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const res = await authApi.register({ username, email, password });
         finishSignIn(res.token, res.user);
       },
-      loginWithGoogle: async (credential) => {
-        const res = await authApi.loginWithGoogle(credential);
+      loginWithGoogle: async (credential, mode) => {
+        const res = await authApi.loginWithGoogle(credential, mode);
         finishSignIn(res.token, res.user);
       },
       logout: () => {

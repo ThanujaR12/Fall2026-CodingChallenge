@@ -82,7 +82,13 @@ export function LoginPage() {
           )}
 
           <div className="mt-5">
-            <GoogleButton onSuccess={() => navigate(next, { replace: true })} />
+            {/* Keyed by mode so Google's button re-renders with "Sign in" / "Sign up" text. */}
+            <GoogleButton
+              key={mode}
+              mode={mode}
+              onSuccess={() => navigate(next, { replace: true })}
+              onNeedsAccount={() => switchMode('signup')}
+            />
           </div>
 
           <p className="mt-6 text-[14px] text-ink/75">

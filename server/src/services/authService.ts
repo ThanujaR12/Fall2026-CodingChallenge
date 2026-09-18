@@ -88,8 +88,9 @@ async function usernameFromEmail(email: string): Promise<string> {
   return candidate;
 }
 
-// "Continue with Google": the same person always reaches the same account.
-export async function loginWithGoogle(credential: string) {
+// "Continue with Google": the same person always reaches the same account. Logging in never
+// creates an account; signing up creates one (or signs in if it already exists).
+export async function loginWithGoogle(credential: string, mode: 'login' | 'signup') {
   const profile = await verifyGoogleCredential(credential);
 
   const byGoogleId = await User.findOne({ googleId: profile.googleId });
@@ -101,6 +102,14 @@ export async function loginWithGoogle(credential: string) {
     byEmail.googleId = profile.googleId;
     await byEmail.save();
     return byEmail;
+  }
+
+  if (mode === 'login') {
+    throw new AppError(
+      404,
+      'ACCOUNT_NOT_FOUND',
+      'No PixBoard account uses this Google account yet. Create one to get started.',
+    );
   }
 
   const username = await usernameFromEmail(profile.email);

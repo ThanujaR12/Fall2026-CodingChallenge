@@ -1,5 +1,6 @@
 // The signed-in user and the sign-in/out actions, shared through React context.
 import { createContext, useContext } from 'react';
+import type { GoogleMode } from '@/api/auth';
 import type { AuthUser } from '@/types/api';
 
 export type AuthState = {
@@ -7,7 +8,7 @@ export type AuthState = {
   status: 'loading' | 'signedIn' | 'signedOut';
   login: (usernameOrEmail: string, password: string) => Promise<void>;
   register: (username: string, email: string, password: string) => Promise<void>;
-  loginWithGoogle: (credential: string) => Promise<void>;
+  loginWithGoogle: (credential: string, mode: GoogleMode) => Promise<void>;
   logout: () => void;
 };
 

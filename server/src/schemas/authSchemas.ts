@@ -31,6 +31,8 @@ export const googleBody = z.object({
   credential: z
     .string({ error: 'Missing Google credential.' })
     .min(20, 'Missing Google credential.'),
+  // "login" only reaches existing accounts; "signup" may create one.
+  mode: z.enum(['login', 'signup']).default('login'),
 });
 
 export type GoogleBody = z.infer<typeof googleBody>;
