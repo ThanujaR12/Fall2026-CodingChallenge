@@ -83,5 +83,5 @@ against a throwaway in-memory copy of the app (screenshots and scripted checks).
 
 ## Phase 8: Polish
 
-- [ ] T021 README.txt: features tour, setup, live link
-- [ ] T022 Deploy publicly (API and client) so reviewers can use one link
+- [X] T021 README.txt: features tour, setup, live link
+- [X] T022 Deploy publicly (API and client) so reviewers can use one link
