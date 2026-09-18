@@ -12,7 +12,16 @@ import type { CollectionSummary, SearchResult } from '@/types/api';
 import { CollectionPickerRow } from './CollectionPickerRow';
 import { NewCollectionInline } from './NewCollectionInline';
 
-export function SaveToCollectionPopover({ result }: { result: SearchResult }) {
+type SaveToCollectionPopoverProps = {
+  result: SearchResult;
+  /** "pin" is the round magenta Save shown over feed photos. */
+  appearance?: 'button' | 'pin';
+};
+
+export function SaveToCollectionPopover({
+  result,
+  appearance = 'button',
+}: SaveToCollectionPopoverProps) {
   const [open, setOpen] = useState(false);
   const [savingTo, setSavingTo] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | undefined>();
@@ -77,7 +86,15 @@ export function SaveToCollectionPopover({ result }: { result: SearchResult }) {
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
-        <Button variant="secondary" aria-label={`Save “${result.title}” to a collection`}>
+        <Button
+          variant={appearance === 'pin' ? 'primary' : 'secondary'}
+          className={
+            appearance === 'pin'
+              ? 'min-h-10 rounded-full bg-accent2 px-4 text-[15px] text-white hover:bg-accent2-deep'
+              : undefined
+          }
+          aria-label={`Save “${result.title}” to a collection`}
+        >
           <BookmarkSimple size={16} />
           Save
         </Button>

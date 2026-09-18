@@ -8,6 +8,7 @@ vi.mock('../src/services/pixabayService.js', () => ({
   PER_PAGE: 20,
   MAX_RESULTS: 500,
   searchImages: vi.fn(async () => ({ hits, total: hits.length })),
+  browseImages: vi.fn(async () => ({ hits, total: hits.length })),
   getImageById: vi.fn(async (id: string) => hits.find((h) => String(h.id) === id) ?? null),
   downloadImage: vi.fn(async () => ({ data: tinyJpeg, contentType: 'image/jpeg' })),
 }));

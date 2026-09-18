@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 
 // Only allow in-app paths as a "next" destination, never another site.
 function safeNext(next: string | null): string {
-  return next && next.startsWith('/') && !next.startsWith('//') ? next : '/collections';
+  return next && next.startsWith('/') && !next.startsWith('//') ? next : '/';
 }
 
 export function LoginPage() {

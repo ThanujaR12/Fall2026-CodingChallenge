@@ -1,5 +1,6 @@
 // Talks to the Pixabay API (server-side only, so the key stays secret) and caches responses 24 hours.
 import { env } from '../config/env.js';
+import { FEED_TOPICS, type FeedTopic } from '../config/feedTopics.js';
 import { MAX_IMAGE_BYTES } from '../config/limits.js';
 import { AppError } from '../utils/AppError.js';
 import { TtlCache } from '../utils/ttlCache.js';
@@ -44,17 +45,18 @@ async function fetchWithTimeout(url: string): Promise<Response> {
   }
 }
 
-export async function searchImages(
-  q: string,
+// One cached page of safe-search photos for the given Pixabay filters.
+async function fetchPage(
+  cacheKey: string,
+  filters: Record<string, string>,
   page: number,
 ): Promise<{ hits: PixabayHit[]; total: number }> {
-  const cacheKey = `${q.toLowerCase()}|${page}`;
   const cached = searchCache.get(cacheKey);
   if (cached) return cached;
 
   const params = new URLSearchParams({
     key: env.PIXABAY_API_KEY,
-    q,
+    ...filters,
     page: String(page),
     per_page: String(PER_PAGE),
     safesearch: 'true',
@@ -69,6 +71,15 @@ export async function searchImages(
   const result = { hits: body.hits, total: Math.min(body.totalHits, MAX_RESULTS) };
   searchCache.set(cacheKey, result);
   return result;
+}
+
+export function searchImages(q: string, page: number) {
+  return fetchPage(`q:${q.toLowerCase()}|${page}`, { q }, page);
+}
+
+/** Popular photos for a home-feed topic, no keyword needed. */
+export function browseImages(topic: FeedTopic, page: number) {
+  return fetchPage(`feed:${topic}|${page}`, FEED_TOPICS[topic], page);
 }
 
 export async function getImageById(id: string): Promise<PixabayHit | null> {

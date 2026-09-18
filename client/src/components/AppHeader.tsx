@@ -1,4 +1,4 @@
-// Top navigation: wordmark, Search and My collections, and the account menu (or Log in).
+// Top navigation: logo, Home, Search and My collections, and the account menu (or Log in).
 import { Link, NavLink } from 'react-router';
 import { SignOut } from '@phosphor-icons/react';
 import { PageContainer } from '@/components/PageContainer';
@@ -21,7 +21,7 @@ export function AppHeader() {
     <header className="border-b border-divider md:border-b-0">
       <PageContainer className="flex min-h-[56px] items-center justify-between gap-3">
         <Link
-          to={user ? '/search' : '/login'}
+          to={user ? '/' : '/login'}
           className="inline-flex min-h-11 items-center text-[18px] text-ink"
         >
           <Logo markClassName="size-[22px]" />
@@ -29,6 +29,9 @@ export function AppHeader() {
 
         {status === 'signedIn' && user ? (
           <nav aria-label="Main" className="flex items-center gap-4 md:gap-5">
+            <NavLink to="/" end className={navLinkClass}>
+              Home
+            </NavLink>
             <NavLink to="/search" className={navLinkClass}>
               Search
             </NavLink>

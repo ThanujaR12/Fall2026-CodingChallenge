@@ -8,7 +8,9 @@ import { SearchResults } from '@/features/search/SearchResults';
 import { APP_NAME } from '@/lib/constants';
 import type { SearchResult } from '@/types/api';
 
-const renderSaveAction = (result: SearchResult) => <SaveToCollectionPopover result={result} />;
+const renderSaveAction = (result: SearchResult) => (
+  <SaveToCollectionPopover result={result} appearance="pin" />
+);
 
 export function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -19,7 +21,7 @@ export function SearchPage() {
   }, [q]);
 
   return (
-    <PageContainer className="pt-6 md:pt-10">
+    <PageContainer className="max-w-[1800px] pt-6 md:pt-10">
       {/* Visually hidden on phones (the design drops it) but kept for screen readers. */}
       <h1 className="sr-only mb-5 text-[50px] md:not-sr-only">Find something worth keeping.</h1>
       <div className="mb-6 max-w-[900px] md:mb-10">

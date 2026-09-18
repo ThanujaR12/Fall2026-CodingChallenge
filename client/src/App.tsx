@@ -1,9 +1,10 @@
 // Route table: sign-in and shared links are public; everything else needs a signed-in user.
-import { Navigate, Outlet, Route, Routes } from 'react-router';
+import { Outlet, Route, Routes } from 'react-router';
 import { AppHeader } from '@/components/AppHeader';
 import { RequireAuth } from '@/features/auth/RequireAuth';
 import { CollectionPage } from '@/pages/CollectionPage';
 import { CollectionsPage } from '@/pages/CollectionsPage';
+import { HomePage } from '@/pages/HomePage';
 import { LoginPage } from '@/pages/LoginPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { SearchPage } from '@/pages/SearchPage';
@@ -27,7 +28,7 @@ export default function App() {
       <Route element={<Layout />}>
         <Route path="s/:token" element={<SharedCollectionPage />} />
         <Route element={<RequireAuth />}>
-          <Route index element={<Navigate to="/search" replace />} />
+          <Route index element={<HomePage />} />
           <Route path="search" element={<SearchPage />} />
           <Route path="collections" element={<CollectionsPage />} />
           <Route path="collections/:id" element={<CollectionPage />} />

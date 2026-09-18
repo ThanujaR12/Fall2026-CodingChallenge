@@ -26,6 +26,31 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+describe('browseImages', () => {
+  it('applies the topic filters without a keyword', async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ total: 50, totalHits: 50, hits }));
+
+    await service.browseImages('architecture', 2);
+
+    const url = new URL(String(fetchMock.mock.calls[0][0]));
+    expect(url.searchParams.get('category')).toBe('buildings');
+    expect(url.searchParams.get('order')).toBe('popular');
+    expect(url.searchParams.get('page')).toBe('2');
+    expect(url.searchParams.get('safesearch')).toBe('true');
+    expect(url.searchParams.has('q')).toBe(false);
+  });
+
+  it('caches each topic page separately from searches', async () => {
+    fetchMock.mockImplementation(async () => jsonResponse({ total: 3, totalHits: 3, hits }));
+
+    await service.browseImages('food', 1);
+    await service.browseImages('food', 1);
+    await service.searchImages('food', 1);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+});
+
 describe('searchImages', () => {
   it('caps total at 500 and sends safe-search paging parameters', async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse({ total: 9000, totalHits: 9000, hits }));
