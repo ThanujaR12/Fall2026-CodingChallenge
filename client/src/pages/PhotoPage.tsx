@@ -200,7 +200,7 @@ export function PhotoPage() {
           </figcaption>
         </figure>
 
-        <aside className="grid gap-6 lg:sticky lg:top-6">
+        <aside className="grid gap-6 lg:sticky lg:top-24">
           {photo ? (
             <>
               <div>

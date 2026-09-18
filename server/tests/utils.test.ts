@@ -15,6 +15,7 @@ describe('titleFromTags', () => {
 
   it('splits and trims tags, dropping empties', () => {
     expect(splitTags(' fog,harbour , ,morning ')).toEqual(['fog', 'harbour', 'morning']);
+    expect(splitTags('lighthouse, sea, Lighthouse')).toEqual(['lighthouse', 'sea']);
   });
 });
 

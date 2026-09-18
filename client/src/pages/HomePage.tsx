@@ -1,7 +1,7 @@
-// Home: a Pinterest-style board of popular photos, filtered by topic chips, with search on top.
+// Home: a Pinterest-style board of popular photos, filtered by topic chips (search is in the header).
 // Your boards sit in the same chip row; picking one shows recommended photos to add to it.
 import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
 import { PageContainer } from '@/components/PageContainer';
 import { ImageFeed } from '@/features/feed/ImageFeed';
 import { TopicChips } from '@/features/feed/TopicChips';
@@ -9,7 +9,6 @@ import { useCollections } from '@/features/collections/useCollections';
 import { BoardIdeas } from '@/features/palettes/BoardIdeas';
 import { useFeed } from '@/features/feed/useFeed';
 import { SaveToCollectionPopover } from '@/features/search/SaveToCollectionPopover';
-import { SearchBar } from '@/features/search/SearchBar';
 import { APP_NAME } from '@/lib/constants';
 import { FEED_TOPICS, isFeedTopic, type FeedTopic } from '@/lib/feedTopics';
 import type { SearchResult } from '@/types/api';
@@ -20,7 +19,6 @@ const renderSaveAction = (result: SearchResult) => (
 
 export function HomePage() {
   const [params, setParams] = useSearchParams();
-  const navigate = useNavigate();
   const raw = params.get('topic');
   const topic: FeedTopic = isFeedTopic(raw) ? raw : 'all';
   const collections = useCollections();
@@ -54,12 +52,8 @@ export function HomePage() {
   return (
     <PageContainer className="max-w-[1800px] pt-3 md:pt-4">
       <h1 className="sr-only">Home feed</h1>
-      {/* Search and topics stay in reach while the board scrolls. */}
-      <div className="sticky top-0 z-20 -mx-4 grid gap-3 bg-paper/95 px-4 pt-2 pb-4 backdrop-blur md:-mx-10 md:px-10">
-        <SearchBar
-          initialQuery=""
-          onSearch={(q) => navigate(`/search?${new URLSearchParams({ q })}`)}
-        />
+      {/* Topics and your boards stay pinned just under the header while the board scrolls. */}
+      <div className="sticky top-16 z-20 -mx-4 bg-paper/95 px-4 pt-1 pb-4 backdrop-blur md:-mx-10 md:px-10">
         <TopicChips
           topic={board ? null : topic}
           boardId={board?.id ?? null}

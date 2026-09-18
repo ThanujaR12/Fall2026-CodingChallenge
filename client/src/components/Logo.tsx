@@ -20,11 +20,27 @@ export function LogoMark({ className }: { className?: string }) {
 }
 
 /** Mark plus wordmark; the visible name doubles as the accessible name. */
-export function Logo({ className, markClassName }: { className?: string; markClassName?: string }) {
+export function Logo({
+  className,
+  markClassName,
+  compactOnMobile = false,
+}: {
+  className?: string;
+  markClassName?: string;
+  /** Show only the mark on phones (the name returns from the sm breakpoint). */
+  compactOnMobile?: boolean;
+}) {
   return (
     <span className={cn('inline-flex items-center gap-2', className)}>
       <LogoMark className={markClassName} />
-      <span className="font-semibold tracking-[-0.015em]">{APP_NAME}</span>
+      <span
+        className={cn(
+          'font-semibold tracking-[-0.015em]',
+          compactOnMobile && 'sr-only sm:not-sr-only',
+        )}
+      >
+        {APP_NAME}
+      </span>
     </span>
   );
 }

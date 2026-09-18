@@ -1,4 +1,5 @@
-// Top bar: the full logo (hidden while the sidebar shows its icon) and the account menu (or Log in).
+// Top bar, pinned while you scroll: the logo (hidden while the sidebar shows its icon), the
+// always-there search for signed-in people, and the account menu (or Log in).
 import { Link } from 'react-router';
 import { SignOut } from '@phosphor-icons/react';
 import { PageContainer } from '@/components/PageContainer';
@@ -6,6 +7,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAuth } from '@/features/auth/useAuth';
 import { useSidebar } from '@/features/navigation/useSidebar';
+import { HeaderSearch } from '@/features/search/HeaderSearch';
 import { Logo } from './Logo';
 import { cn } from '@/lib/utils';
 
@@ -15,8 +17,8 @@ export function AppHeader() {
   const signedIn = status === 'signedIn' && Boolean(user);
 
   return (
-    <header className="border-b border-divider md:border-b-0">
-      <PageContainer className="flex min-h-[56px] max-w-[1800px] items-center justify-between gap-3">
+    <header className="sticky top-0 z-30 border-b border-divider bg-paper/95 backdrop-blur">
+      <PageContainer className="flex h-16 max-w-[1800px] items-center justify-between gap-3 md:gap-6">
         <Link
           to={user ? '/' : '/login'}
           className={cn(
@@ -26,11 +28,17 @@ export function AppHeader() {
           )}
           tabIndex={signedIn && sidebar.open ? -1 : undefined}
         >
-          <Logo markClassName="size-[22px]" />
+          <Logo markClassName="size-[22px]" compactOnMobile={signedIn} />
         </Link>
 
+        {signedIn && (
+          <div className="min-w-0 max-w-[760px] flex-1">
+            <HeaderSearch />
+          </div>
+        )}
+
         {status === 'signedIn' && user ? (
-          <div className="flex items-center">
+          <div className="flex shrink-0 items-center">
             <Popover>
               <PopoverTrigger
                 aria-label={`Account: ${user.username}`}
