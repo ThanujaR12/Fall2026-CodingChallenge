@@ -89,6 +89,17 @@ export type SharedView = CollectionSummary & { owner: PublicUser; items: SavedIt
 
 export type Visibility = 'private' | 'public';
 
+export type BoardActivityEntry = {
+  id: string;
+  type: 'item_added' | 'item_edited' | 'item_removed' | 'member_invited';
+  actor: PublicUser | null;
+  itemTitle: string;
+  imageUrl: string | null;
+  target: PublicUser | null;
+  role: MemberRole | null;
+  createdAt: string;
+};
+
 export type AppNotification = {
   id: string;
   type: 'item_added' | 'item_edited' | 'item_removed' | 'member_invited';

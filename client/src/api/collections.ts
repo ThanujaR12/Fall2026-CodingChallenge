@@ -1,5 +1,6 @@
 // HTTP calls for collections.
 import type {
+  BoardActivityEntry,
   CollectionDetail,
   CollectionInput,
   CollectionSummary,
@@ -39,4 +40,10 @@ export async function updateCollection(
 
 export function deleteCollection(id: string): Promise<void> {
   return request<void>(`/collections/${id}`, { method: 'DELETE' });
+}
+
+/** The board's recent activity, newest first. */
+export async function getBoardActivity(id: string): Promise<BoardActivityEntry[]> {
+  const body = await request<{ activity: BoardActivityEntry[] }>(`/collections/${id}/activity`);
+  return body.activity;
 }

@@ -10,12 +10,13 @@ import {
 import { queryKeys } from '@/lib/queryKeys';
 import type { CollectionDetail, MemberRole } from '@/types/api';
 
-// Every sharing change refreshes this collection and the collection lists ("Shared with me").
+// Every sharing change refreshes this collection, its activity, and the lists ("Shared with me").
 function useRefresh(collectionId: string) {
   const queryClient = useQueryClient();
   return () => {
     void queryClient.invalidateQueries({ queryKey: queryKeys.collection(collectionId) });
     void queryClient.invalidateQueries({ queryKey: ['collections'] });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.activity(collectionId) });
   };
 }
 

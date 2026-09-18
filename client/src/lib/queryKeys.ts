@@ -6,4 +6,5 @@ export const queryKeys = {
   collections: (sourceId?: string) =>
     sourceId ? (['collections', { sourceId }] as const) : (['collections'] as const),
   collection: (id: string) => ['collection', id] as const,
+  activity: (id: string) => ['activity', id] as const,
 };

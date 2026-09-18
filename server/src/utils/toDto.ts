@@ -127,6 +127,30 @@ export function toNotification(n: NotificationLike) {
   };
 }
 
+type ActivityLike = {
+  _id: Types.ObjectId;
+  type: string;
+  actor: UserLike | null;
+  itemTitle?: string | null;
+  asset?: Types.ObjectId | null;
+  target?: UserLike | null;
+  role?: string | null;
+  createdAt: Date;
+};
+
+export function toActivity(a: ActivityLike) {
+  return {
+    id: String(a._id),
+    type: a.type,
+    actor: a.actor ? toPublicUser(a.actor) : null,
+    itemTitle: a.itemTitle ?? '',
+    imageUrl: a.asset ? imageUrl(a.asset) : null,
+    target: a.target ? toPublicUser(a.target) : null,
+    role: a.role ?? null,
+    createdAt: a.createdAt.toISOString(),
+  };
+}
+
 export function toPublicUser(user: UserLike) {
   return { id: String(user._id), username: user.username };
 }

@@ -396,6 +396,22 @@ curl -X PATCH http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0 \
   -d '{"name":"Coast","description":"Lighthouses only"}'
 ```
 
+### `GET /collections/:id/activity`
+
+The board's recent activity (newest 30, newest first): photos added, edited, and removed, and
+invites. Each change appears once. Visible to the owner and every member.
+
+- **Auth**: token required
+- **Response 200**:
+  `{ "activity": [{ "id", "type", "actor": PublicUser, "itemTitle", "imageUrl": string | null, "target": PublicUser | null, "role": "editor" | "viewer" | null, "createdAt" }] }`
+  (`type` is `item_added`, `item_edited`, `item_removed`, or `member_invited`)
+- **Errors**: `400 VALIDATION_ERROR`, `404 COLLECTION_NOT_FOUND`
+
+```bash
+curl http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0/activity \
+  -H "Authorization: Bearer $TOKEN"
+```
+
 ### `DELETE /collections/:id`
 
 Permanently deletes a collection and everything saved in it. Stored image copies are removed too,

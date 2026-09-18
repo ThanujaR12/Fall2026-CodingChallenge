@@ -4,6 +4,7 @@ import type { Types } from 'mongoose';
 import { Collection } from '../models/Collection.js';
 import { SavedItem } from '../models/SavedItem.js';
 import { AppError } from '../utils/AppError.js';
+import { removeForCollection as removeActivity } from './activityService.js';
 import { removeOrphanAssets } from './assetService.js';
 import { palettesFor } from './paletteService.js';
 import { assertCan, resolveAccess } from './permissionService.js';
@@ -210,6 +211,7 @@ export async function deleteCollection(userId: Types.ObjectId, collectionId: str
 
   await SavedItem.deleteMany({ collectionId: collection._id });
   await removeOrphanAssets(assetIds);
+  await removeActivity(collection._id);
   await collection.deleteOne();
 }
 

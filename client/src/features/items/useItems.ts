@@ -48,6 +48,7 @@ export function useSaveItem() {
       // Covers, palettes, and counts come back from the server once it has the image.
       void queryClient.invalidateQueries({ queryKey: ['collections'] });
       void queryClient.invalidateQueries({ queryKey: queryKeys.collection(vars.collectionId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.activity(vars.collectionId) });
     },
   });
 }
@@ -95,6 +96,7 @@ export function useUpdateItem(collectionId: string) {
           : current,
       );
       void queryClient.invalidateQueries({ queryKey: ['collections'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.activity(collectionId) });
     },
   });
 }
@@ -124,6 +126,7 @@ export function useRemoveItem(collectionId: string) {
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: key });
       void queryClient.invalidateQueries({ queryKey: ['collections'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.activity(collectionId) });
     },
   });
 }

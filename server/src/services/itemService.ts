@@ -6,6 +6,7 @@ import { AppError } from '../utils/AppError.js';
 import { splitTags, titleFromTags } from '../utils/titleFromTags.js';
 import { removeOrphanAssets } from './assetService.js';
 import { touchCollection } from './collectionService.js';
+import { recordActivity } from './activityService.js';
 import { notifyItemChange } from './notificationService.js';
 import { extractColors } from './paletteService.js';
 import { assertCan, resolveAccess } from './permissionService.js';
@@ -79,11 +80,9 @@ export async function saveItem(userId: Types.ObjectId, collectionId: string, sou
   });
 
   await touchCollection(collection._id);
-  await notifyItemChange(collection, userId, {
-    type: 'item_added',
-    itemTitle: item.title,
-    asset: asset._id,
-  });
+  const added = { type: 'item_added', itemTitle: item.title, asset: asset._id } as const;
+  await recordActivity({ collectionId: collection._id, actor: userId, ...added });
+  await notifyItemChange(collection, userId, added);
   return item.populate('addedBy', 'username');
 }
 
@@ -111,11 +110,9 @@ export async function updateItem(
 
   await item.save();
   await touchCollection(collection._id);
-  await notifyItemChange(collection, userId, {
-    type: 'item_edited',
-    itemTitle: item.title,
-    asset: item.asset,
-  });
+  const edited = { type: 'item_edited', itemTitle: item.title, asset: item.asset } as const;
+  await recordActivity({ collectionId: collection._id, actor: userId, ...edited });
+  await notifyItemChange(collection, userId, edited);
   return item.populate('addedBy', 'username');
 }
 
@@ -127,5 +124,7 @@ export async function removeItem(userId: Types.ObjectId, collectionId: string, i
   await item.deleteOne();
   await removeOrphanAssets([item.asset]);
   await touchCollection(collection._id);
-  await notifyItemChange(collection, userId, { type: 'item_removed', itemTitle: item.title });
+  const removed = { type: 'item_removed', itemTitle: item.title } as const;
+  await recordActivity({ collectionId: collection._id, actor: userId, ...removed });
+  await notifyItemChange(collection, userId, removed);
 }

@@ -56,8 +56,8 @@ against a throwaway in-memory copy of the app (screenshots and scripted checks).
 
 ## Phase 7: Bonus B4 — Board activity history (US8) — P3
 
-- [ ] T019 [US8] `GET /api/collections/:id/activity` (anyone who can view the board; one entry per change); tests; API.md
-- [ ] T020 [US8] "Recent activity" list on the board page
+- [X] T019 [US8] `GET /api/collections/:id/activity` (anyone who can view the board; one entry per change); tests; API.md (see commit "feat: board activity history")
+- [X] T020 [US8] "Recent activity" list on the board page (same commit)
 
 ## Phase 8: Polish
 

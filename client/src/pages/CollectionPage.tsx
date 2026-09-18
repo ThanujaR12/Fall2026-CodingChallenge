@@ -19,6 +19,7 @@ import { MembersDialog } from '@/features/sharing/MembersDialog';
 import { ShareDialog } from '@/features/sharing/ShareDialog';
 import { SavedItemGrid } from '@/features/items/SavedItemGrid';
 import { BoardHero } from '@/features/palettes/BoardHero';
+import { BoardActivity } from '@/features/collections/BoardActivity';
 import { APP_NAME } from '@/lib/constants';
 
 export function CollectionPage() {
@@ -152,6 +153,8 @@ export function CollectionPage() {
           />
         </div>
       )}
+
+      <BoardActivity collectionId={data.id} myUserId={myUserId} />
     </PageContainer>
   );
 }

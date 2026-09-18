@@ -6,8 +6,14 @@ import type {
   UpdateCollectionBody,
 } from '../schemas/collectionSchemas.js';
 import type { IdParams } from '../schemas/common.js';
+import * as activityService from '../services/activityService.js';
 import * as collectionService from '../services/collectionService.js';
-import { toCollectionDetail, toCollectionSummary, toSharedSummary } from '../utils/toDto.js';
+import {
+  toActivity,
+  toCollectionDetail,
+  toCollectionSummary,
+  toSharedSummary,
+} from '../utils/toDto.js';
 
 export async function listCollections(req: Request, res: Response) {
   const { sourceId } = res.locals.query as ListCollectionsQuery;
@@ -22,6 +28,12 @@ export async function createCollection(req: Request, res: Response) {
   const body = req.body as CreateCollectionBody;
   const { collection, stats } = await collectionService.createCollection(req.userId, body);
   res.status(201).json({ collection: toCollectionSummary(collection, stats) });
+}
+
+export async function getActivity(req: Request, res: Response) {
+  const { id } = res.locals.params as IdParams;
+  const activity = await activityService.listForCollection(req.userId, id);
+  res.json({ activity: activity.map(toActivity) });
 }
 
 export async function getCollection(req: Request, res: Response) {

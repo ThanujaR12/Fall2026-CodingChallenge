@@ -19,6 +19,7 @@ export const collectionRoutes = Router();
 collectionRoutes.get('/', validate({ query: listCollectionsQuery }), collections.listCollections);
 collectionRoutes.post('/', validate({ body: createCollectionBody }), collections.createCollection);
 collectionRoutes.get('/:id', validate({ params: idParams }), collections.getCollection);
+collectionRoutes.get('/:id/activity', validate({ params: idParams }), collections.getActivity);
 collectionRoutes.patch(
   '/:id',
   validate({ params: idParams, body: updateCollectionBody }),
