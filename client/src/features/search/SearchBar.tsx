@@ -1,14 +1,27 @@
-// Keyword field and Search button; ignores empty submissions.
+// Keyword field with voice input and a Search button; ignores empty submissions.
 import { useState, type FormEvent } from 'react';
-import { MagnifyingGlass } from '@phosphor-icons/react';
+import { MagnifyingGlass, Microphone } from '@phosphor-icons/react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MAX_QUERY } from '@/lib/constants';
+import { cn } from '@/lib/utils';
+import { useVoiceSearch } from './useVoiceSearch';
 
 type SearchBarProps = { initialQuery: string; onSearch: (q: string) => void };
 
 export function SearchBar({ initialQuery, onSearch }: SearchBarProps) {
   const [value, setValue] = useState(initialQuery);
+  const voice = useVoiceSearch({
+    onInterim: (text) => setValue(text.slice(0, MAX_QUERY)),
+    // Speaking a phrase runs the search, just like pressing Search.
+    onFinal: (text) => {
+      const q = text.slice(0, MAX_QUERY).trim();
+      setValue(q);
+      if (q) onSearch(q);
+    },
+    onError: (message) => toast.error(message),
+  });
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -34,10 +47,35 @@ export function SearchBar({ initialQuery, onSearch }: SearchBarProps) {
           value={value}
           onChange={(event) => setValue(event.target.value)}
           maxLength={MAX_QUERY}
-          placeholder="Search for images, e.g. coastal fog"
-          className="min-h-11 pl-10 text-[16px] md:min-h-[42px]"
+          placeholder={voice.listening ? 'Listening…' : 'Search for images, e.g. coastal fog'}
+          className={cn('min-h-11 pl-10 text-[16px] md:min-h-[42px]', voice.supported && 'pr-12')}
           autoComplete="off"
         />
+        {/* Hidden where the browser can't do speech recognition (e.g. Firefox). */}
+        {voice.supported && (
+          <button
+            type="button"
+            onClick={voice.listening ? voice.stop : voice.start}
+            aria-pressed={voice.listening}
+            aria-label={voice.listening ? 'Stop listening' : 'Search by voice'}
+            title={voice.listening ? 'Stop listening' : 'Search by voice'}
+            className={cn(
+              'absolute top-1/2 right-1 inline-flex size-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full transition-colors',
+              voice.listening
+                ? 'bg-accent2 text-white motion-safe:animate-pulse'
+                : 'text-ink/70 hover:bg-surface hover:text-ink',
+            )}
+          >
+            <Microphone
+              size={19}
+              weight={voice.listening ? 'fill' : 'regular'}
+              aria-hidden="true"
+            />
+          </button>
+        )}
+        <span className="sr-only" aria-live="polite">
+          {voice.listening ? 'Listening. Say what you want to see.' : ''}
+        </span>
       </div>
       <Button type="submit" size="lg" className="min-h-11 md:min-h-[42px]">
         Search
