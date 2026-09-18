@@ -427,6 +427,6 @@ Task: "Create client/src/api/items.ts"
 
 ## Phase 11: Convergence
 
-- [ ] T116 CRITICAL: Replace the four `TODO` placeholders in `README.txt` with the author's full name, Vanderbilt email, a reflection under 100 words, and challenge feedback (author-supplied content; cannot be generated) per Constitution: Project Constraints & Deliverables (partial)
+- [X] T116 CRITICAL: Replace the four `TODO` placeholders in `README.txt` with the author's full name, Vanderbilt email, a reflection under 100 words, and challenge feedback (author-supplied content; cannot be generated) per Constitution: Project Constraints & Deliverables (partial)
 - [X] T117 Run quickstart scenarios S1–S8 in `specs/001-discover-collect/quickstart.md` against real MongoDB Atlas and a real Pixabay key in `server/.env` (not the local harness), time the S1 flow for SC-001, confirm search results appear in about 2 seconds, and fix any differences found per SC-001, SC-002, T114 (partial)
 - [X] T118 In `client/src/features/items/ItemEditForm.tsx`, when saving fails with a non-validation error (network, 5xx, not found), leave edit mode so the panel shows the last saved title and note, keep the error toast, and stay in edit mode only for field validation errors per US5/AC5 (partial)

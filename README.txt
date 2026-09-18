@@ -1,8 +1,8 @@
 PIXBOARD (displayed in the app as "Palette Boards")
 Change++ Fall 2026 Coding Challenge — image saving/sharing app
 
-Name:              TODO: your full name
-Vanderbilt email:  TODO: your @vanderbilt.edu email
+Name:              Thanuja Rameshbaabu
+Vanderbilt email:  thanuja.rameshbaabu@vanderbilt.edu
 
 
 WHAT IT DOES
@@ -103,10 +103,21 @@ In client/:
 
 REFLECTION (under 100 words)
 ----------------------------
-TODO: write your reflection here — what you learned, what was reinforced, and any
-issues you ran into.
+Reading Pixabay's API terms changed my whole design: search image links expire
+after 24 hours and permanent hotlinking isn't allowed, so my server keeps its own
+copy of every saved image. Because I wrote a spec, plan, and task list before
+coding, that pivot was cheap instead of painful. Some lessons came the hard way:
+Mongoose reserves the field name "collection," Express 5 makes req.query
+read-only, and MongoDB has no Windows-on-ARM build. Measuring contrast ratios
+made me darken my own mockup's cyan - accessibility won over my design.
 
 
 FEEDBACK
 --------
-TODO: your feedback on the challenge, workshops, or office hours.
+The open-ended prompt paired with a concrete rubric was a great combination: I knew
+exactly what "good" looked like but still had room to make it my own. One
+suggestion: the README could mention that Pixabay forbids permanent hotlinking and
+that its image URLs expire after 24 hours. Saving the returned URL is the obvious
+approach, so many submissions may have collections that quietly break a day later.
+A one-line heads-up would make a nice extra-credit hook ("how did you handle image
+storage?").
