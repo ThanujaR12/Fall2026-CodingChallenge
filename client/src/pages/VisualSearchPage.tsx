@@ -1,4 +1,4 @@
-// Results of "Search with a photo": your photo, its description, the brands and words read from it,
+// Results of "Search with a photo": your photo, the brands and words read from it,
 // search ideas (pick which to search), its colours, and photos matching by subject or by colour.
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
@@ -23,7 +23,7 @@ const renderSaveAction = (result: SearchResult) => (
 );
 
 function Results({ state }: { state: VisualState }) {
-  // Start with the best idea: the AI's first search, or printed words, or the top object guess.
+  // Start with the best idea: printed words if any were read, otherwise the top object guess.
   const [query, setQuery] = useState(state.guesses[0]?.name ?? state.words[0] ?? '');
   const [by, setBy] = useState<SimilarBy>('subject');
   const color = state.palette[0] ? nearestImageColor(state.palette[0]) : null;
@@ -80,12 +80,6 @@ function Results({ state }: { state: VisualState }) {
           className="w-full rounded-2xl object-cover md:max-h-[320px]"
         />
         <div className="grid gap-5">
-          {state.description && (
-            <p className="text-[18px] leading-snug">
-              {state.description}
-              <span className="mt-1 block text-[12px] text-ink/65">Recognised with AI</span>
-            </p>
-          )}
           <div role="radiogroup" aria-label="Search for" className="grid gap-4">
             {state.words.length > 0 && (
               <div>

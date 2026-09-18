@@ -1,17 +1,13 @@
-// Search with a photo: works out what a photo shows and which words will find photos like it.
-//  1. Claude on the server (when set up) names brands, printed words, and the subject.
-//  2. Tesseract OCR, in the browser, always reads printed words (brand names, titles, labels).
-//  3. MobileNet, in the browser, recognises everyday objects when Claude isn't available.
-// The on-device engines load only on first use, so they cost nothing until the camera is opened.
-import { understandPhoto, visionEnabled } from '@/api/vision';
+// Search with a photo: works out what a photo shows and which words will find photos like it,
+// entirely in the browser (free, and the photo never leaves the device):
+//  1. Tesseract OCR reads printed words (brand names, titles, labels).
+//  2. MobileNet recognises everyday objects.
+// Both load only on first use, so they cost nothing until the camera is opened.
 
 export type Guess = { name: string; probability?: number };
 
 export type PhotoAnalysis = {
-  /** "claude" when the server understood it; "device" when only on-device engines ran. */
-  source: 'claude' | 'device';
-  description: string | null;
-  /** Brand names first, then other printed words. */
+  /** Printed words read from the photo, most confident first. */
   words: string[];
   /** Search ideas, best first. */
   guesses: Guess[];
@@ -178,51 +174,26 @@ export function paletteFromImage(img: HTMLImageElement | HTMLCanvasElement, size
 
 // ---------- Putting it together ----------
 
-/** Warms up whichever engines this visit will use, while the person picks a photo. */
-export async function warmUp() {
+/** Warms up both engines while the person picks a photo. */
+export function warmUp() {
   void loadOcr().catch(() => {});
-  if (!(await visionEnabled())) void loadModel().catch(() => {});
+  void loadModel().catch(() => {});
 }
 
-function mergeWords(...lists: string[][]): string[] {
-  const seen = new Set<string>();
-  return lists
-    .flat()
-    .filter((w) => (seen.has(w.toLowerCase()) ? false : (seen.add(w.toLowerCase()), true)))
-    .slice(0, 8);
-}
-
-export async function analyzePhoto(img: HTMLImageElement, dataUrl: string): Promise<PhotoAnalysis> {
+export async function analyzePhoto(img: HTMLImageElement): Promise<PhotoAnalysis> {
   const palette = paletteFromImage(img);
-  const ocr = printedWords(img).catch(() => [] as string[]);
-
-  if (await visionEnabled()) {
-    const [understanding, words] = await Promise.all([
-      understandPhoto(dataUrl).catch(() => null),
-      ocr,
-    ]);
-    if (understanding) {
-      return {
-        source: 'claude',
-        description: understanding.description,
-        words: mergeWords(understanding.brands, understanding.text, words),
-        guesses: understanding.keywords.map((name) => ({ name })),
-        palette,
-      };
-    }
-  }
-
-  // No server understanding: printed words (if any) lead, then recognised objects.
-  const [words, objects] = await Promise.all([ocr, objectGuesses(img)]);
-  const guesses: Guess[] =
+  const [words, objects] = await Promise.all([
+    printedWords(img).catch(() => [] as string[]),
+    objectGuesses(img),
+  ]);
+  // Printed words (a brand, a title) lead; then recognised objects. With real words to go on,
+  // weak object guesses are more noise than help.
+  const fromWords: Guess[] =
     words.length > 0 ? [{ name: words.slice(0, 2).join(' ').toLowerCase() }] : [];
   return {
-    source: 'device',
-    description: null,
     words,
-    // With real words to go on, weak object guesses are more noise than help.
     guesses: [
-      ...guesses,
+      ...fromWords,
       ...objects.filter((o) => words.length === 0 || (o.probability ?? 0) >= 0.15),
     ],
     palette,

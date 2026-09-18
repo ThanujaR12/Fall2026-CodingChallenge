@@ -93,14 +93,6 @@ export type RecommendationsResponse = SearchResponse & { basedOn: string[] };
 
 export type SimilarBy = 'subject' | 'color';
 
-export type PhotoUnderstanding = {
-  description: string;
-  subject: string;
-  brands: string[];
-  text: string[];
-  keywords: string[];
-};
-
 export type PhotoResponse = { photo: SearchResult & { largeUrl: string }; palette: string[] };
 
 export type SimilarResponse = SearchResponse & {

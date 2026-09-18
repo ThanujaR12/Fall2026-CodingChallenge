@@ -73,14 +73,11 @@
 ## R11: Reading brands and words from photos
 
 - **Problem**: MobileNet names objects only; a Crayola chalk box came back as "packet 6%".
-- **Decision**: Two layers. (1) Claude (`claude-opus-5`, low effort, structured output via
-  `zodOutputFormat`) on the server returns a description, brands, printed text, and search keywords;
-  signed-in only, 20 photos/minute/person, the photo is never stored; with `fallbacks: "default"` so
-  a safety decline retries on a fallback model. (2) Tesseract.js OCR in the browser always runs,
-  in "sparse text" mode on two enlarged passes (colour and grayscale).
-- **Evidence (OCR)**: The default document mode read nothing from the chalk box; sparse text on the
-  colour pass read "Chalk" (94%), the grayscale pass "Crayola" (94%). Busy scenes (a STOP sign in a
-  field) still defeat Tesseract; that is what the Claude layer covers.
-- **Fallback**: Without `ANTHROPIC_API_KEY`, printed words lead the search ideas, then MobileNet
-  objects (weak guesses hidden when words were found).
-- **Cost**: roughly 1 US cent per photo with Opus 5 at low effort.
+- **Decision**: Tesseract.js OCR in the browser, in "sparse text" mode on two enlarged passes
+  (colour and grayscale). Printed words lead the search ideas; weak object guesses are hidden when
+  words were found. Free, and the photo never leaves the device.
+- **Evidence**: The default document mode read nothing from the chalk box; sparse text on the
+  colour pass read "Chalk" (94%), the grayscale pass "Crayola" (94%) → search "chalk crayola".
+- **Rejected**: A hosted vision model (Claude) was built and tested but removed at the author's
+  request: the project must cost nothing to run. Busy scenes (a STOP sign in a field) and stylised
+  logos stay beyond on-device OCR; that is the accepted trade-off.

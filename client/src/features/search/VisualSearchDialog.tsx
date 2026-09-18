@@ -12,8 +12,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useQuery } from '@tanstack/react-query';
-import { visionEnabled } from '@/api/vision';
 import { analyzePhoto, loadImage, warmUp } from '@/lib/visualSearch';
 import { cn } from '@/lib/utils';
 
@@ -48,11 +46,6 @@ export function VisualSearchDialog() {
   const streamRef = useRef<MediaStream | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const captureRef = useRef<HTMLInputElement>(null);
-  const vision = useQuery({
-    queryKey: ['vision-enabled'],
-    queryFn: visionEnabled,
-    staleTime: Infinity,
-  });
   const canUseCamera =
     typeof navigator !== 'undefined' && Boolean(navigator.mediaDevices?.getUserMedia);
 
@@ -83,7 +76,7 @@ export function VisualSearchDialog() {
     setError(null);
     try {
       const img = await loadImage(dataUrl);
-      const analysis = await analyzePhoto(img, dataUrl);
+      const analysis = await analyzePhoto(img);
       handleOpenChange(false);
       navigate('/visual-search', { state: { image: dataUrl, ...analysis } });
     } catch {
@@ -206,9 +199,7 @@ export function VisualSearchDialog() {
             )}
             <p className="flex items-center gap-1.5 text-[12px] text-ink/70">
               <LockSimple size={14} aria-hidden="true" />
-              {vision.data
-                ? 'Your photo is analysed to read brands and words, then discarded. It is never stored.'
-                : 'Your photo stays on this device. Only the words we recognise are searched.'}
+              Your photo stays on this device. Only the words we recognise are searched.
             </p>
           </div>
         )}

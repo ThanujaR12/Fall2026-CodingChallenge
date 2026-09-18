@@ -14,12 +14,7 @@ export function createApp() {
   // Saved images are served from this origin to the client origin, so allow cross-origin loading.
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
   app.use(cors({ origin: env.CLIENT_ORIGIN }));
-  // Photos sent to "Search with a photo" need room; every other body stays small.
-  const photoJson = express.json({ limit: '4mb' });
-  const smallJson = express.json({ limit: '100kb' });
-  app.use((req, res, next) =>
-    req.path === '/api/photos/understand' ? photoJson(req, res, next) : smallJson(req, res, next),
-  );
+  app.use(express.json({ limit: '100kb' }));
   if (env.NODE_ENV !== 'test') app.use(morgan('dev'));
 
   app.use('/api', routes);
