@@ -44,6 +44,7 @@ Every error response has this shape:
 | 404    | `MEMBER_NOT_FOUND`            | That user isn't a member of the collection                           |
 | 404    | `SHARE_LINK_INACTIVE`         | The share link is unknown or has been turned off                     |
 | 404    | `BOARD_NOT_PUBLIC`            | The board is private or no longer exists (Explore view)              |
+| 404    | `NOTIFICATION_NOT_FOUND`      | The notification doesn't exist or isn't yours                        |
 | 404    | `ITEM_NOT_FOUND`              | Item missing or not in that collection                               |
 | 404    | `IMAGE_NOT_FOUND`             | Stored image missing, or the Pixabay image no longer exists          |
 | 404    | `ROUTE_NOT_FOUND`             | Unknown path                                                         |
@@ -517,6 +518,54 @@ A public board's read-only view: the same shape as `GET /shared/:token` (no memb
 
 ```bash
 curl http://localhost:4000/api/explore/66e8a1f2c3b4d5e6f7a8b9c0
+```
+
+## Notifications
+
+Board members are notified when someone else adds, edits, or removes an item, and people are
+notified when they are invited to a board. The person who acted is never notified about their own
+change. The newest 50 are returned.
+
+```ts
+type Notification = {
+  id: string;
+  type: 'item_added' | 'item_edited' | 'item_removed' | 'member_invited';
+  actor: PublicUser | null; // who did it
+  collection: { id: string; name: string }; // name as it was at the time
+  itemTitle: string; // "" for invites
+  imageUrl: string | null; // thumbnail; null for removals and invites
+  role: 'editor' | 'viewer' | null; // for invites
+  read: boolean;
+  createdAt: string;
+};
+```
+
+### `GET /notifications`
+
+- **Auth**: token required
+- **Response 200**: `{ "notifications": Notification[], "unreadCount": 3 }` (newest first)
+
+```bash
+curl http://localhost:4000/api/notifications -H "Authorization: Bearer $TOKEN"
+```
+
+### `POST /notifications/:id/read`
+
+Marks one notification as read.
+
+- **Auth**: token required
+- **Response 204**
+- **Errors**: `400 VALIDATION_ERROR`, `404 NOTIFICATION_NOT_FOUND`
+
+### `POST /notifications/read-all`
+
+Marks all of your notifications as read.
+
+- **Auth**: token required
+- **Response 204**
+
+```bash
+curl -X POST http://localhost:4000/api/notifications/read-all -H "Authorization: Bearer $TOKEN"
 ```
 
 ## Sharing

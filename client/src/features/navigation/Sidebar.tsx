@@ -3,6 +3,8 @@ import { useEffect, type FocusEvent } from 'react';
 import { Link, NavLink, useLocation } from 'react-router';
 import { LogoMark } from '@/components/Logo';
 import { cn } from '@/lib/utils';
+import { NotificationsPanel } from '@/features/notifications/NotificationsPanel';
+import { useNotifications } from '@/features/notifications/useNotifications';
 import { NavIcon } from './NavIcon';
 import { NAV_ITEMS } from './navItems';
 import { useSidebar } from './useSidebar';
@@ -10,7 +12,8 @@ import { useSidebar } from './useSidebar';
 const PEEK_MS = 3000;
 
 export function Sidebar() {
-  const { open, setHovered, setFocused, finishPeek } = useSidebar();
+  const { open, setHovered, setFocused, finishPeek, panelOpen, setPanelOpen } = useSidebar();
+  const unread = useNotifications().data?.unreadCount ?? 0;
   const { pathname, key } = useLocation();
 
   // Arriving on Home shows the sidebar for a few seconds (timed from when it first appears).
@@ -53,38 +56,61 @@ export function Sidebar() {
         </Link>
 
         <ul className="flex flex-col items-center gap-2">
-          {NAV_ITEMS.map(({ to, label, icon, end, colorful }) => (
+          {NAV_ITEMS.map(({ to, label, icon, end, colorful, opensPanel }) => (
             <li key={to}>
-              <NavLink
-                to={to}
-                end={end}
-                aria-label={label}
-                className={({ isActive }) =>
-                  cn(
-                    'group relative inline-flex size-12 items-center justify-center rounded-xl transition-colors',
-                    isActive && !colorful && 'bg-ink text-paper',
-                    isActive && colorful && 'bg-surface',
-                    !isActive && 'text-ink/75 hover:bg-surface hover:text-ink',
-                  )
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    <NavIcon icon={icon} active={isActive} colorful={colorful} />
-                    {/* Label bubble on hover or keyboard focus; the link's aria-label names it. */}
-                    <span
-                      aria-hidden="true"
-                      className="pointer-events-none absolute left-full ml-3 rounded-md bg-ink px-2.5 py-1 text-[13px] font-semibold whitespace-nowrap text-paper opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
-                    >
-                      {label}
-                    </span>
-                  </>
-                )}
-              </NavLink>
+              {opensPanel ? (
+                <button
+                  type="button"
+                  data-notifications-trigger
+                  aria-expanded={panelOpen}
+                  aria-label={unread > 0 ? `${label}, ${unread} unread` : label}
+                  onClick={() => setPanelOpen(!panelOpen)}
+                  className={cn(
+                    'group relative inline-flex size-12 cursor-pointer items-center justify-center rounded-xl transition-colors',
+                    panelOpen ? 'bg-ink text-paper' : 'text-ink/75 hover:bg-surface hover:text-ink',
+                  )}
+                >
+                  <NavIcon icon={icon} active={panelOpen} badge={unread} />
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute left-full ml-3 rounded-md bg-ink px-2.5 py-1 text-[13px] font-semibold whitespace-nowrap text-paper opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+                  >
+                    {label}
+                  </span>
+                </button>
+              ) : (
+                <NavLink
+                  to={to}
+                  end={end}
+                  aria-label={label}
+                  className={({ isActive }) =>
+                    cn(
+                      'group relative inline-flex size-12 items-center justify-center rounded-xl transition-colors',
+                      isActive && !colorful && 'bg-ink text-paper',
+                      isActive && colorful && 'bg-surface',
+                      !isActive && 'text-ink/75 hover:bg-surface hover:text-ink',
+                    )
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <NavIcon icon={icon} active={isActive} colorful={colorful} />
+                      {/* Label bubble on hover or keyboard focus; the link's aria-label names it. */}
+                      <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute left-full ml-3 rounded-md bg-ink px-2.5 py-1 text-[13px] font-semibold whitespace-nowrap text-paper opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+                      >
+                        {label}
+                      </span>
+                    </>
+                  )}
+                </NavLink>
+              )}
             </li>
           ))}
         </ul>
       </nav>
+      <NotificationsPanel />
     </>
   );
 }

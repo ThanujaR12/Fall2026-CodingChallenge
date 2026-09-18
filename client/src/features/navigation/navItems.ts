@@ -17,6 +17,8 @@ export type NavItem = {
   end?: boolean;
   /** Palette Boards gets a rainbow ring so it stands out from the plain icons. */
   colorful?: boolean;
+  /** On desktop this item opens the notifications panel instead of a page. */
+  opensPanel?: boolean;
 };
 
 export const NAV_ITEMS: NavItem[] = [
@@ -25,6 +27,6 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/collections', label: 'Boards', icon: SquaresFour },
   { to: '/palettes', label: 'Palettes', icon: Palette, colorful: true },
   { to: '/create', label: 'Create', icon: PlusSquare },
-  { to: '/notifications', label: 'Notifications', icon: Bell },
+  { to: '/notifications', label: 'Notifications', icon: Bell, opensPanel: true },
   { to: '/messages', label: 'Chat', icon: ChatCircleDots },
 ];

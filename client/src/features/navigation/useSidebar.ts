@@ -8,6 +8,9 @@ export type SidebarState = {
   setFocused: (focused: boolean) => void;
   /** Ends the arrival peek for this navigation (by its location key). */
   finishPeek: (locationKey: string) => void;
+  /** The notifications panel beside the sidebar. */
+  panelOpen: boolean;
+  setPanelOpen: (open: boolean) => void;
 };
 
 export const SidebarContext = createContext<SidebarState>({
@@ -15,6 +18,8 @@ export const SidebarContext = createContext<SidebarState>({
   setHovered: () => {},
   setFocused: () => {},
   finishPeek: () => {},
+  panelOpen: false,
+  setPanelOpen: () => {},
 });
 
 export function useSidebar(): SidebarState {

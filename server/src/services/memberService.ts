@@ -4,6 +4,7 @@ import { Collection } from '../models/Collection.js';
 import { User } from '../models/User.js';
 import { AppError } from '../utils/AppError.js';
 import { assertCan, resolveAccess } from './permissionService.js';
+import { notifyInvite } from './notificationService.js';
 
 type MemberRole = 'editor' | 'viewer';
 
@@ -44,6 +45,7 @@ export async function invite(
 
   collection.members.push({ user: invitee._id, role });
   await collection.save();
+  await notifyInvite(collection, userId, invitee._id, role);
   return membersWithUsers(collection._id);
 }
 

@@ -12,6 +12,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   const [peekDoneFor, setPeekDoneFor] = useState<string | null>(null);
   const [hovered, setHoveredState] = useState(false);
   const [focused, setFocused] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(false);
   const closeTimer = useRef<number | undefined>(undefined);
 
   // Every arrival on Home shows the sidebar briefly; the Sidebar ends the peek once it has shown.
@@ -28,12 +29,14 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     () => ({
-      open: peeking || hovered || focused,
+      open: peeking || hovered || focused || panelOpen,
       setHovered,
       setFocused,
       finishPeek: setPeekDoneFor,
+      panelOpen,
+      setPanelOpen,
     }),
-    [peeking, hovered, focused, setHovered],
+    [peeking, hovered, focused, panelOpen, setHovered],
   );
 
   return <SidebarContext.Provider value={value}>{children}</SidebarContext.Provider>;

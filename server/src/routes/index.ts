@@ -5,6 +5,7 @@ import { authRoutes } from './authRoutes.js';
 import { collectionRoutes } from './collectionRoutes.js';
 import { exploreRoutes } from './exploreRoutes.js';
 import { feedRoutes } from './feedRoutes.js';
+import { notificationRoutes } from './notificationRoutes.js';
 import { imageRoutes } from './imageRoutes.js';
 import { searchRoutes } from './searchRoutes.js';
 import { sharedRoutes } from './sharedRoutes.js';
@@ -19,6 +20,7 @@ routes.use('/auth', authRoutes);
 routes.use('/search', searchRoutes);
 routes.use('/feed', feedRoutes);
 routes.use('/collections', requireAuth, collectionRoutes);
+routes.use('/notifications', requireAuth, notificationRoutes);
 // Share links and image bytes must work for signed-out visitors.
 routes.use('/shared', sharedRoutes);
 routes.use('/explore', exploreRoutes);

@@ -100,6 +100,33 @@ export function toSharedView(
 
 type UserLike = { _id: Types.ObjectId; username: string; email?: string | null };
 
+type NotificationLike = {
+  _id: Types.ObjectId;
+  type: string;
+  actor: UserLike | null;
+  collectionId: Types.ObjectId;
+  collectionName: string;
+  itemTitle?: string | null;
+  asset?: Types.ObjectId | null;
+  role?: string | null;
+  readAt?: Date | null;
+  createdAt: Date;
+};
+
+export function toNotification(n: NotificationLike) {
+  return {
+    id: String(n._id),
+    type: n.type,
+    actor: n.actor ? toPublicUser(n.actor) : null,
+    collection: { id: String(n.collectionId), name: n.collectionName },
+    itemTitle: n.itemTitle ?? '',
+    imageUrl: n.asset ? imageUrl(n.asset) : null,
+    role: n.role ?? null,
+    read: Boolean(n.readAt),
+    createdAt: n.createdAt.toISOString(),
+  };
+}
+
 export function toPublicUser(user: UserLike) {
   return { id: String(user._id), username: user.username };
 }

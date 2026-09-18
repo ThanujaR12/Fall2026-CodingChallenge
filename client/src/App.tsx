@@ -6,9 +6,10 @@ import { useAuth } from '@/features/auth/useAuth';
 import { MobileNav } from '@/features/navigation/MobileNav';
 import { Sidebar } from '@/features/navigation/Sidebar';
 import { SidebarProvider } from '@/features/navigation/SidebarProvider';
-import { Bell, ChatCircleDots, PlusSquare } from '@phosphor-icons/react';
+import { ChatCircleDots, PlusSquare } from '@phosphor-icons/react';
 import { ComingSoonPage } from '@/pages/ComingSoonPage';
 import { ExplorePage } from '@/pages/ExplorePage';
+import { NotificationsPage } from '@/pages/NotificationsPage';
 import { CollectionPage } from '@/pages/CollectionPage';
 import { CollectionsPage } from '@/pages/CollectionsPage';
 import { HomePage } from '@/pages/HomePage';
@@ -62,16 +63,7 @@ export default function App() {
               />
             }
           />
-          <Route
-            path="notifications"
-            element={
-              <ComingSoonPage
-                title="Notifications"
-                icon={Bell}
-                body="You'll hear here when someone invites you or adds to a board you share."
-              />
-            }
-          />
+          <Route path="notifications" element={<NotificationsPage />} />
           <Route
             path="messages"
             element={
