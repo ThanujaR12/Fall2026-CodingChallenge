@@ -44,7 +44,12 @@ export function ItemEditForm({ item }: ItemEditFormProps) {
           toast.success('Changes saved');
         },
         onError: (error) => {
-          if (!(error instanceof ApiError && error.fields)) toast.error(error.message);
+          // Field errors keep the form open so they can be fixed; any other failure
+          // (network, server, not found) returns the panel to the last saved values.
+          if (error instanceof ApiError && error.fields) return;
+          toast.error(`Couldn't save your changes. ${error.message}`);
+          update.reset();
+          setIsEditing(false);
         },
       },
     );
