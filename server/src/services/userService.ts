@@ -1,4 +1,4 @@
-// Creates (once) and remembers the built-in stand-in user that owns everything in Feature 1.
+// Creates (once) and remembers the built-in stand-in user that owned everything before accounts.
 import type { Types } from 'mongoose';
 import { User } from '../models/User.js';
 
@@ -8,7 +8,8 @@ export async function ensureStandInUser(): Promise<Types.ObjectId> {
   // Upsert keeps this idempotent across restarts: the same user is reused every time.
   const user = await User.findOneAndUpdate(
     { isStandIn: true },
-    { $setOnInsert: { username: 'you', isStandIn: true } },
+    // usernameKey is $set so a stand-in created before accounts existed gets one too.
+    { $set: { usernameKey: 'you' }, $setOnInsert: { username: 'you', isStandIn: true } },
     { upsert: true, new: true, setDefaultsOnInsert: true },
   );
   standInUserId = user._id;

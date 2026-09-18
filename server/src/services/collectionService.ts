@@ -1,9 +1,11 @@
-// Business rules for collections: unique names per owner, listing with counts and covers.
+// Business rules for collections: unique names per owner, owned/shared lists, details, sharing.
+import { randomBytes } from 'node:crypto';
 import type { Types } from 'mongoose';
 import { Collection } from '../models/Collection.js';
 import { SavedItem } from '../models/SavedItem.js';
 import { AppError } from '../utils/AppError.js';
 import { removeOrphanAssets } from './assetService.js';
+import { assertCan, resolveAccess } from './permissionService.js';
 
 export type CollectionStats = {
   itemCount: number;
@@ -81,52 +83,62 @@ async function statsFor(collectionIds: Types.ObjectId[]): Promise<Map<string, Co
   );
 }
 
-// With a sourceId, each collection also says whether it already holds that image.
-export async function listForOwner(ownerId: Types.ObjectId, sourceId?: string) {
-  const collections = await Collection.find({ owner: ownerId }).sort({ updatedAt: -1, _id: -1 });
-  const ids = collections.map((c) => c._id);
-  const stats = await statsFor(ids);
-
-  const holding = sourceId
-    ? new Set(
-        (
-          await SavedItem.distinct('collectionId', {
-            collectionId: { $in: ids },
-            source: 'pixabay',
-            sourceId,
-          })
-        ).map(String),
-      )
-    : null;
-
-  return collections.map((collection) => {
-    const row = { ...(stats.get(String(collection._id)) ?? emptyStats) };
-    if (holding) row.containsImage = holding.has(String(collection._id));
-    return { collection, stats: row };
+// Marks which collections already hold an image (for the save picker's "Already saved").
+async function collectionsHolding(ids: Types.ObjectId[], sourceId?: string) {
+  if (!sourceId) return null;
+  const holding = await SavedItem.distinct('collectionId', {
+    collectionId: { $in: ids },
+    source: 'pixabay',
+    sourceId,
   });
+  return new Set(holding.map(String));
 }
 
-// Finds a collection only if it belongs to the owner; anything else looks like "not found".
-export async function getOwnedCollection(ownerId: Types.ObjectId, collectionId: string) {
-  const collection = await Collection.findOne({ _id: collectionId, owner: ownerId });
-  if (!collection) {
-    throw new AppError(404, 'COLLECTION_NOT_FOUND', "That collection doesn't exist.");
-  }
-  return collection;
+type PopulatedOwner = { owner: { _id: Types.ObjectId; username: string } };
+
+// The user's own collections plus the ones shared with them, most recently updated first.
+export async function listForUser(userId: Types.ObjectId, sourceId?: string) {
+  const [owned, shared] = await Promise.all([
+    Collection.find({ owner: userId }).sort({ updatedAt: -1, _id: -1 }),
+    Collection.find({ 'members.user': userId })
+      .sort({ updatedAt: -1, _id: -1 })
+      .populate<PopulatedOwner>('owner', 'username'),
+  ]);
+  const ids = [...owned, ...shared].map((c) => c._id);
+  const [stats, holding] = await Promise.all([statsFor(ids), collectionsHolding(ids, sourceId)]);
+
+  const statsOf = (id: Types.ObjectId) => {
+    const row = { ...(stats.get(String(id)) ?? emptyStats) };
+    if (holding) row.containsImage = holding.has(String(id));
+    return row;
+  };
+
+  return {
+    owned: owned.map((collection) => ({ collection, stats: statsOf(collection._id) })),
+    shared: shared.map((collection) => ({
+      collection,
+      stats: statsOf(collection._id),
+      owner: collection.owner,
+      role: (collection.members.find((m) => m.user.equals(userId))?.role ?? 'viewer') as
+        'editor' | 'viewer',
+    })),
+  };
 }
 
 export async function updateCollection(
-  ownerId: Types.ObjectId,
+  userId: Types.ObjectId,
   collectionId: string,
   changes: { name?: string; description?: string },
 ) {
-  const collection = await getOwnedCollection(ownerId, collectionId);
+  const { collection, role } = await resolveAccess(userId, collectionId);
+  if (changes.name !== undefined) assertCan(role, 'rename');
+  if (changes.description !== undefined) assertCan(role, 'editDescription');
 
   if (changes.name !== undefined) {
     const nameKey = toNameKey(changes.name);
-    // Another collection with the same name is a clash; this collection's own name is fine.
+    // Names are unique per owner; this collection's own name (in any casing) is fine.
     const clash = await Collection.exists({
-      owner: ownerId,
+      owner: collection.owner,
       nameKey,
       _id: { $ne: collection._id },
     });
@@ -146,13 +158,11 @@ export async function touchCollection(collectionId: Types.ObjectId): Promise<voi
   await Collection.updateOne({ _id: collectionId }, { $set: { updatedAt: new Date() } });
 }
 
-export async function getCollectionDetail(ownerId: Types.ObjectId, collectionId: string) {
-  const collection = await getOwnedCollection(ownerId, collectionId);
-  const items = await SavedItem.find({ collectionId: collection._id }).sort({
-    createdAt: -1,
-    _id: -1,
-  });
-
+// Items newest first with who added each one, plus cover stats computed from them.
+async function itemsWithStats(collectionId: Types.ObjectId) {
+  const items = await SavedItem.find({ collectionId })
+    .sort({ createdAt: -1, _id: -1 })
+    .populate('addedBy', 'username');
   const newest = items[0];
   const stats: CollectionStats = newest
     ? {
@@ -162,16 +172,60 @@ export async function getCollectionDetail(ownerId: Types.ObjectId, collectionId:
         coverPageUrl: newest.pageUrl,
       }
     : { ...emptyStats };
+  return { items, stats };
+}
 
-  return { collection, stats, items };
+type PopulatedDetail = PopulatedOwner & {
+  members: { user: { _id: Types.ObjectId; username: string }; role: 'editor' | 'viewer' }[];
+};
+
+export async function getCollectionDetail(userId: Types.ObjectId, collectionId: string) {
+  const access = await resolveAccess(userId, collectionId);
+  assertCan(access.role, 'view');
+  const collection = await access.collection.populate<PopulatedDetail>([
+    { path: 'owner', select: 'username' },
+    { path: 'members.user', select: 'username' },
+  ]);
+  const { items, stats } = await itemsWithStats(collection._id);
+  return { collection, stats, items, role: access.role };
 }
 
 // Permanently deletes a collection, its saved items, and image copies no other collection uses.
-export async function deleteCollection(ownerId: Types.ObjectId, collectionId: string) {
-  const collection = await getOwnedCollection(ownerId, collectionId);
+export async function deleteCollection(userId: Types.ObjectId, collectionId: string) {
+  const { collection, role } = await resolveAccess(userId, collectionId);
+  assertCan(role, 'delete');
   const assetIds = await SavedItem.distinct('asset', { collectionId: collection._id });
 
   await SavedItem.deleteMany({ collectionId: collection._id });
   await removeOrphanAssets(assetIds);
   await collection.deleteOne();
+}
+
+// Turning the link on always makes a brand-new token, so an old link never comes back to life.
+export async function enableShare(userId: Types.ObjectId, collectionId: string) {
+  const { collection, role } = await resolveAccess(userId, collectionId);
+  assertCan(role, 'share');
+  collection.shareToken = randomBytes(18).toString('base64url');
+  await collection.save();
+  return collection.shareToken;
+}
+
+export async function disableShare(userId: Types.ObjectId, collectionId: string) {
+  const { collection, role } = await resolveAccess(userId, collectionId);
+  assertCan(role, 'share');
+  collection.shareToken = null;
+  await collection.save();
+}
+
+// The read-only board anyone with an active link can see (no members, no token).
+export async function getSharedView(shareToken: string) {
+  const collection = await Collection.findOne({ shareToken }).populate<PopulatedOwner>(
+    'owner',
+    'username',
+  );
+  if (!collection) {
+    throw new AppError(404, 'SHARE_LINK_INACTIVE', 'This link is no longer active.');
+  }
+  const { items, stats } = await itemsWithStats(collection._id);
+  return { collection, stats, items };
 }

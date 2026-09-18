@@ -1,12 +1,12 @@
 # PixBoard API
 
 REST API for PixBoard (displayed as "Palette Boards"): search Pixabay images, organize them into
-collections, and edit or remove saved items.
+collections, edit or remove saved items, and share collections by link or with collaborators.
 
 - **Base URL**: `http://localhost:4000/api`
 - **Format**: JSON request and response bodies, except `GET /images/:id` (image bytes).
-- **Auth (Feature 1)**: none — every request acts as the built-in stand-in user. Feature 2 adds
-  `Authorization: Bearer <token>` without changing these shapes.
+- **Auth**: sign up or log in to get a token, then send `Authorization: Bearer <token>`. Tokens
+  last 7 days. Endpoints marked **public** need no token; all `/collections` endpoints require one.
 
 ## Errors
 
@@ -28,17 +28,45 @@ Every error response has this shape:
 }
 ```
 
-| Status | Code                       | When                                                                |
-| ------ | -------------------------- | ------------------------------------------------------------------- |
-| 400    | `VALIDATION_ERROR`         | Body, query, or params fail validation (or the JSON is malformed)   |
-| 404    | `COLLECTION_NOT_FOUND`     | Collection missing or not owned by the current user                 |
-| 404    | `ITEM_NOT_FOUND`           | Item missing or not in that collection                              |
-| 404    | `IMAGE_NOT_FOUND`          | Stored image missing, or the Pixabay image no longer exists         |
-| 404    | `ROUTE_NOT_FOUND`          | Unknown path                                                        |
-| 409    | `COLLECTION_NAME_TAKEN`    | Name matches another of your collections (ignoring case and spaces) |
-| 409    | `ITEM_ALREADY_SAVED`       | The image is already in that collection                             |
-| 502    | `IMAGE_SOURCE_UNAVAILABLE` | Pixabay failed, timed out (8 s), or rate-limited the request        |
-| 500    | `INTERNAL_ERROR`           | Anything unexpected (details are only in the server log)            |
+| Status | Code                          | When                                                                |
+| ------ | ----------------------------- | ------------------------------------------------------------------- |
+| 400    | `VALIDATION_ERROR`            | Body, query, or params fail validation (or the JSON is malformed)   |
+| 400    | `CANNOT_INVITE_SELF`          | The owner tried to invite themselves                                |
+| 400    | `CANNOT_LEAVE_OWN_COLLECTION` | The owner tried to leave (owners delete instead)                    |
+| 401    | `UNAUTHENTICATED`             | Missing, invalid, or expired token                                  |
+| 401    | `INVALID_CREDENTIALS`         | Wrong username/email or password (same message for both)            |
+| 403    | `FORBIDDEN`                   | You can see the collection, but your role doesn't allow the action  |
+| 404    | `COLLECTION_NOT_FOUND`        | Collection missing, or you are not its owner or a member            |
+| 404    | `USER_NOT_FOUND`              | No account matches the invited username or email                    |
+| 404    | `MEMBER_NOT_FOUND`            | That user isn't a member of the collection                          |
+| 404    | `SHARE_LINK_INACTIVE`         | The share link is unknown or has been turned off                    |
+| 404    | `ITEM_NOT_FOUND`              | Item missing or not in that collection                              |
+| 404    | `IMAGE_NOT_FOUND`             | Stored image missing, or the Pixabay image no longer exists         |
+| 404    | `ROUTE_NOT_FOUND`             | Unknown path                                                        |
+| 409    | `COLLECTION_NAME_TAKEN`       | Name matches another of your collections (ignoring case and spaces) |
+| 409    | `ITEM_ALREADY_SAVED`          | The image is already in that collection                             |
+| 409    | `USERNAME_TAKEN`              | Sign-up username already used (ignoring capitalization)             |
+| 409    | `EMAIL_TAKEN`                 | Sign-up email already used (ignoring capitalization)                |
+| 409    | `ALREADY_MEMBER`              | The invited user is already a member                                |
+
+## Roles and permissions
+
+Every collection has one **owner**; the owner can invite **editors** and **viewers**. Anyone with an
+active share link can view read-only (see `GET /shared/:token`). The server checks this table on
+every request: a member without permission gets `403 FORBIDDEN`; a non-member gets
+`404 COLLECTION_NOT_FOUND`.
+
+| Action                              |           Owner            |                            Editor                            | Viewer |
+| ----------------------------------- | :------------------------: | :----------------------------------------------------------: | :----: |
+| View collection and items           |             ✓              |                              ✓                               |   ✓    |
+| Save, edit, remove items            |             ✓              |                              ✓                               |   –    |
+| Edit description                    |             ✓              |                              ✓                               |   –    |
+| Rename or delete collection         |             ✓              |                              –                               |   –    |
+| Turn share link on/off              |             ✓              |                              –                               |   –    |
+| Invite, change role, remove members |             ✓              |                              –                               |   –    |
+| Leave collection                    |             –              |                              ✓                               |   ✓    |
+| 502                                 | `IMAGE_SOURCE_UNAVAILABLE` | Pixabay failed, timed out (8 s), or rate-limited the request |
+| 500                                 |      `INTERNAL_ERROR`      |   Anything unexpected (details are only in the server log)   |
 
 ## Shared types
 
@@ -83,7 +111,23 @@ type SavedItem = {
   updatedAt: string;
 };
 
-type CollectionDetail = CollectionSummary & { items: SavedItem[] }; // items newest first
+type PublicUser = { id: string; username: string };
+type AuthUser = PublicUser & { email: string };
+type Member = { user: PublicUser; role: 'editor' | 'viewer' };
+
+// SavedItem also includes: addedBy: PublicUser | null  (who saved it)
+
+type SharedCollectionSummary = CollectionSummary & { owner: PublicUser; role: 'editor' | 'viewer' };
+
+type CollectionDetail = CollectionSummary & {
+  items: SavedItem[]; // newest first
+  role: 'owner' | 'editor' | 'viewer'; // your role
+  owner: PublicUser;
+  members: Member[];
+  shareToken: string | null; // only shown to the owner
+};
+
+type SharedView = CollectionSummary & { owner: PublicUser; items: SavedItem[] };
 ```
 
 ---
@@ -99,6 +143,49 @@ Confirms the server is running.
 
 ```bash
 curl http://localhost:4000/api/health
+```
+
+## Auth
+
+### `POST /auth/register`
+
+Creates an account and signs it in. The very first account also receives every collection created
+before accounts existed.
+
+- **Auth**: public
+- **Body**: `username` (3–30 letters, numbers, underscores), `email`, `password` (8–128 characters)
+- **Response 201**: `{ "token": "<jwt>", "user": AuthUser }` — passwords are never returned
+- **Errors**: `400 VALIDATION_ERROR` (with `fields`), `409 USERNAME_TAKEN`, `409 EMAIL_TAKEN`
+
+```bash
+curl -X POST http://localhost:4000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"alice","email":"alice@example.com","password":"password123"}'
+```
+
+### `POST /auth/login`
+
+- **Auth**: public
+- **Body**: `usernameOrEmail` (either, any capitalization), `password`
+- **Response 200**: `{ "token": "<jwt>", "user": AuthUser }`
+- **Errors**: `400 VALIDATION_ERROR`, `401 INVALID_CREDENTIALS`
+
+```bash
+curl -X POST http://localhost:4000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"usernameOrEmail":"alice","password":"password123"}'
+```
+
+### `GET /auth/me`
+
+Returns the signed-in user (used to restore a session after a page reload).
+
+- **Auth**: token required
+- **Response 200**: `{ "user": AuthUser }`
+- **Errors**: `401 UNAUTHENTICATED`
+
+```bash
+curl http://localhost:4000/api/auth/me -H "Authorization: Bearer <token>"
 ```
 
 ## Search
@@ -148,15 +235,16 @@ curl "http://localhost:4000/api/search/images?q=lighthouse&page=1"
 
 ### `GET /collections`
 
-Lists the current user's collections, most recently updated first. Creating, renaming, or editing
-a collection, or saving, editing, or removing one of its items, counts as an update.
+Lists your own collections and the ones shared with you, each most recently updated first.
+Creating, renaming, or editing a collection, or saving, editing, or removing one of its items,
+counts as an update.
 
-- **Auth**: none (stand-in user)
+- **Auth**: token required
 - **Query**:
   - `sourceId` (optional): a Pixabay image id (digits). When given, each summary also includes
     `containsImage: true | false`, used by the save picker to mark collections that already hold
     that image.
-- **Response 200**: `{ "collections": [CollectionSummary] }`
+- **Response 200**: `{ "collections": [CollectionSummary], "shared": [SharedCollectionSummary] }`
 
   ```json
   {
@@ -172,22 +260,32 @@ a collection, or saving, editing, or removing one of its items, counts as an upd
         "createdAt": "2026-09-16T18:02:11.000Z",
         "updatedAt": "2026-09-16T18:10:45.000Z"
       }
+    ],
+    "shared": [
+      {
+        "id": "66e8b0...",
+        "name": "Studio moodboard",
+        "role": "editor",
+        "owner": { "id": "66e8af...", "username": "devi" }
+      }
     ]
   }
   ```
 
-- **Errors**: `400 VALIDATION_ERROR`
+  (`shared` entries have every `CollectionSummary` field; shortened here.)
+
+- **Errors**: `400 VALIDATION_ERROR`, `401 UNAUTHENTICATED`
 
 ```bash
-curl http://localhost:4000/api/collections
-curl "http://localhost:4000/api/collections?sourceId=736877"
+curl http://localhost:4000/api/collections -H "Authorization: Bearer <token>"
+curl "http://localhost:4000/api/collections?sourceId=736877" -H "Authorization: Bearer <token>"
 ```
 
 ### `POST /collections`
 
 Creates a collection.
 
-- **Auth**: none (stand-in user)
+- **Auth**: token required
 - **Body**:
   - `name` (required): 1–60 characters after trimming; must not match another of your collections
     (ignoring case and surrounding spaces)
@@ -204,11 +302,13 @@ curl -X POST http://localhost:4000/api/collections \
 
 ### `GET /collections/:id`
 
-Returns one collection with all of its saved items, newest first.
+Returns one collection with its saved items (newest first, each with `addedBy`), your role, the
+owner, and the member list. `shareToken` is only included for the owner.
 
-- **Auth**: none (stand-in user)
+- **Auth**: token required
 - **Params**: `id` — collection id
-- **Response 200**: `{ "collection": CollectionDetail }` — a `CollectionSummary` plus `items: [SavedItem]`
+- **Who**: owner, editor, viewer
+- **Response 200**: `{ "collection": CollectionDetail }`
 - **Errors**: `400 VALIDATION_ERROR` (malformed id), `404 COLLECTION_NOT_FOUND`
 
 ```bash
@@ -217,17 +317,18 @@ curl http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0
 
 ### `PATCH /collections/:id`
 
-Renames a collection and/or edits its description. Uses the same rules as creation.
+Renames a collection and/or edits its description. Uses the same rules as creation. The owner may
+change both; an editor may change only the description (sending `name` → `403 FORBIDDEN`).
 
-- **Auth**: none (stand-in user)
+- **Auth**: token required
 - **Params**: `id` — collection id
 - **Body** (at least one field):
   - `name`: 1–60 characters after trimming; must not match another of your collections (changing
     only the capitalization of its own name is allowed)
   - `description`: up to 280 characters
 - **Response 200**: `{ "collection": CollectionSummary }`
-- **Errors**: `400 VALIDATION_ERROR` (including an empty body), `404 COLLECTION_NOT_FOUND`,
-  `409 COLLECTION_NAME_TAKEN`
+- **Errors**: `400 VALIDATION_ERROR` (including an empty body), `403 FORBIDDEN`,
+  `404 COLLECTION_NOT_FOUND`, `409 COLLECTION_NAME_TAKEN`
 
 ```bash
 curl -X PATCH http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0 \
@@ -238,18 +339,23 @@ curl -X PATCH http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0 \
 ### `DELETE /collections/:id`
 
 Permanently deletes a collection and everything saved in it. Stored image copies are removed too,
-unless another collection still uses the same image. (The client asks for confirmation first.)
+unless another collection still uses the same image. Members lose access and any share link stops
+working. Owner only. (The client asks for confirmation first.)
 
-- **Auth**: none (stand-in user)
+- **Auth**: token required
 - **Params**: `id` — collection id
 - **Response 204**: no body
-- **Errors**: `400 VALIDATION_ERROR` (malformed id), `404 COLLECTION_NOT_FOUND`
+- **Errors**: `400 VALIDATION_ERROR` (malformed id), `403 FORBIDDEN`, `404 COLLECTION_NOT_FOUND`
 
 ```bash
-curl -X DELETE http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0
+curl -X DELETE http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0 \
+  -H "Authorization: Bearer <token>"
 ```
 
 ## Items
+
+All item endpoints: owners and editors only (viewers get `403 FORBIDDEN`). Items record who added
+them (`addedBy`).
 
 ### `POST /collections/:id/items`
 
@@ -257,7 +363,7 @@ Saves a Pixabay image into a collection. The server looks the image up by id its
 trusts image data or URLs from the browser) and stores its own copy of the image, because Pixabay
 does not allow permanent hotlinking.
 
-- **Auth**: none (stand-in user)
+- **Auth**: token required
 - **Params**: `id` — collection id
 - **Body**: `{ "sourceId": "736877" }` — the Pixabay image id (digits only)
 - **Response 201**: `{ "item": SavedItem }` — `title` defaults to the first two tags, `note` is `""`
@@ -296,7 +402,7 @@ curl -X POST http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0/item
 
 Edits a saved image's display title and/or personal note.
 
-- **Auth**: none (stand-in user)
+- **Auth**: token required
 - **Params**: `id` — collection id; `itemId` — saved item id
 - **Body** (at least one field):
   - `title`: up to 100 characters after trimming; an empty title resets it to the tag-based default
@@ -316,7 +422,7 @@ curl -X PATCH http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0/ite
 Removes a saved image from one collection. The same image saved in other collections (with its own
 title and note) is not affected.
 
-- **Auth**: none (stand-in user)
+- **Auth**: token required
 - **Params**: `id` — collection id; `itemId` — saved item id
 - **Response 204**: no body
 - **Errors**: `400 VALIDATION_ERROR` (malformed ids), `404 COLLECTION_NOT_FOUND`,
@@ -326,13 +432,99 @@ title and note) is not affected.
 curl -X DELETE http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0/items/66e8a3b1c2d4e5f6a7b8c9d0
 ```
 
+## Sharing
+
+### `POST /collections/:id/share`
+
+Turns the share link on. Every call creates a **new** random token (24 URL-safe characters), so a
+link that was turned off never works again. Owner only.
+
+- **Auth**: token required
+- **Response 200**: `{ "shareToken": "7fQ2vMk9Ld3XpRt..." }` — the client link is `/s/<shareToken>`
+- **Errors**: `403 FORBIDDEN`, `404 COLLECTION_NOT_FOUND`
+
+```bash
+curl -X POST http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0/share \
+  -H "Authorization: Bearer <token>"
+```
+
+### `DELETE /collections/:id/share`
+
+Turns the share link off; the old link stops working immediately. Owner only.
+
+- **Auth**: token required
+- **Response 204**: no body
+- **Errors**: `403 FORBIDDEN`, `404 COLLECTION_NOT_FOUND`
+
+```bash
+curl -X DELETE http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0/share \
+  -H "Authorization: Bearer <token>"
+```
+
+### `GET /shared/:token`
+
+The read-only board anyone with an active link can see. No members or token are included.
+
+- **Auth**: public
+- **Response 200**: `{ "collection": SharedView }`
+- **Errors**: `400 VALIDATION_ERROR` (malformed token), `404 SHARE_LINK_INACTIVE`
+
+```bash
+curl http://localhost:4000/api/shared/7fQ2vMk9Ld3XpRtAbCdEfGhI
+```
+
+## Members
+
+### `POST /collections/:id/members`
+
+Invites an existing user as an editor or viewer; they get access immediately. Owner only.
+
+- **Auth**: token required
+- **Body**: `{ "usernameOrEmail": "bob", "role": "editor" }` (`role` is `editor` or `viewer`)
+- **Response 201**: `{ "members": [Member] }`
+- **Errors**: `400 VALIDATION_ERROR`, `400 CANNOT_INVITE_SELF`, `403 FORBIDDEN`,
+  `404 USER_NOT_FOUND`, `409 ALREADY_MEMBER`
+
+```bash
+curl -X POST http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0/members \
+  -H "Authorization: Bearer <token>" -H "Content-Type: application/json" \
+  -d '{"usernameOrEmail":"bob","role":"editor"}'
+```
+
+### `PATCH /collections/:id/members/:userId`
+
+Changes a member's role. Owner only.
+
+- **Auth**: token required
+- **Body**: `{ "role": "viewer" }`
+- **Response 200**: `{ "members": [Member] }`
+- **Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN`, `404 MEMBER_NOT_FOUND`
+
+```bash
+curl -X PATCH http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0/members/66e8af00c2d4e5f6a7b8c9d0 \
+  -H "Authorization: Bearer <token>" -H "Content-Type: application/json" -d '{"role":"viewer"}'
+```
+
+### `DELETE /collections/:id/members/:userId`
+
+The owner removes a member, or a member removes themselves ("leave"). The owner cannot leave.
+
+- **Auth**: token required
+- **Response 204**: no body
+- **Errors**: `400 CANNOT_LEAVE_OWN_COLLECTION`, `403 FORBIDDEN`, `404 MEMBER_NOT_FOUND`
+
+```bash
+curl -X DELETE http://localhost:4000/api/collections/66e8a1f2c3b4d5e6f7a8b9c0/members/66e8af00c2d4e5f6a7b8c9d0 \
+  -H "Authorization: Bearer <token>"
+```
+
 ## Images
 
 ### `GET /images/:id`
 
 Returns the stored bytes of a saved image. `imageUrl` and `coverImageUrl` fields point here.
 
-- **Auth**: none
+- **Auth**: public (image tags can't send tokens, and share-link visitors need the images)
 - **Params**: `id` — image asset id
 - **Response 200**: image bytes with `Content-Type` (e.g. `image/jpeg`) and
   `Cache-Control: public, max-age=31536000, immutable`
@@ -342,10 +534,10 @@ Returns the stored bytes of a saved image. `imageUrl` and `coverImageUrl` fields
 curl -o photo.jpg http://localhost:4000/api/images/66e8a3b0c2d4e5f6a7b8c9cf
 ```
 
-## Known limitations (Feature 1)
+## Known limitations
 
-- There are no accounts yet: every request acts as one built-in stand-in user. Feature 2 adds
-  sign-in and hands the stand-in user's collections to the first account that registers.
-- `GET /images/:id` is not scoped to an owner. With a single user this is harmless (and asset ids
-  are unguessable ObjectIds); revisit it when Feature 2 adds private collections.
+- `GET /images/:id` is public: `<img>` tags cannot send a token, and share-link visitors must see
+  images. Asset ids are random ObjectIds only revealed to people who can see the collection.
+- Sessions are 7-day tokens stored by the client; there is no server-side sign-out of other devices
+  and no password reset (out of scope).
 - The Pixabay response cache lives in server memory, so it resets when the server restarts.

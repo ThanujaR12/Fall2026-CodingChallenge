@@ -1,7 +1,7 @@
 // Integration tests for saved items: save, image serving, edit, and remove.
-import request from 'supertest';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createApp } from '../src/app.js';
+import { registerUser } from './helpers.js';
 import { Collection } from '../src/models/Collection.js';
 import { ImageAsset } from '../src/models/ImageAsset.js';
 import { SavedItem } from '../src/models/SavedItem.js';
@@ -10,14 +10,21 @@ import { AppError } from '../src/utils/AppError.js';
 
 const app = createApp();
 
+// Every request in these tests is made by a freshly signed-up owner.
+let api: Awaited<ReturnType<typeof registerUser>>['agent'];
+
+beforeEach(async () => {
+  ({ agent: api } = await registerUser(app));
+});
+
 async function createCollection(name: string) {
-  const res = await request(app).post('/api/collections').send({ name });
+  const res = await api.post('/api/collections').send({ name });
   expect(res.status).toBe(201);
   return res.body.collection.id as string;
 }
 
 async function saveItem(collectionId: string, sourceId: string) {
-  return request(app).post(`/api/collections/${collectionId}/items`).send({ sourceId });
+  return api.post(`/api/collections/${collectionId}/items`).send({ sourceId });
 }
 
 describe('POST /api/collections/:id/items', () => {
@@ -118,7 +125,7 @@ describe('GET /api/collections?sourceId=', () => {
     const without = await createCollection('Without image');
     await saveItem(withImage, '101');
 
-    const res = await request(app).get('/api/collections?sourceId=101');
+    const res = await api.get('/api/collections?sourceId=101');
 
     const marks = Object.fromEntries(
       res.body.collections.map((c: { id: string; containsImage: boolean }) => [
@@ -135,7 +142,7 @@ describe('GET /api/images/:id', () => {
     const collectionId = await createCollection('Coast trip');
     const saved = await saveItem(collectionId, '101');
 
-    const res = await request(app).get(saved.body.item.imageUrl);
+    const res = await api.get(saved.body.item.imageUrl);
 
     expect(res.status).toBe(200);
     expect(res.headers['content-type']).toBe('image/jpeg');
@@ -144,7 +151,7 @@ describe('GET /api/images/:id', () => {
   });
 
   it('returns IMAGE_NOT_FOUND for an unknown image', async () => {
-    const res = await request(app).get('/api/images/66e8a1f2c3b4d5e6f7a8b9c0');
+    const res = await api.get('/api/images/66e8a1f2c3b4d5e6f7a8b9c0');
     expect(res.status).toBe(404);
     expect(res.body.error.code).toBe('IMAGE_NOT_FOUND');
   });
@@ -161,7 +168,7 @@ describe('PATCH /api/collections/:id/items/:itemId', () => {
   it('updates the title and note', async () => {
     const { collectionId, itemId } = await savedItemIn('Coast trip');
 
-    const res = await request(app)
+    const res = await api
       .patch(`/api/collections/${collectionId}/items/${itemId}`)
       .send({ title: 'Hallway light', note: 'for the hallway' });
 
@@ -173,16 +180,12 @@ describe('PATCH /api/collections/:id/items/:itemId', () => {
     const { collectionId, itemId } = await savedItemIn('Coast trip');
     const url = `/api/collections/${collectionId}/items/${itemId}`;
 
-    const note = await request(app)
-      .patch(url)
-      .send({ note: 'n'.repeat(501) });
+    const note = await api.patch(url).send({ note: 'n'.repeat(501) });
     expect(note.status).toBe(400);
     expect(note.body.error.code).toBe('VALIDATION_ERROR');
     expect(note.body.error.fields.note).toEqual(expect.any(String));
 
-    const title = await request(app)
-      .patch(url)
-      .send({ title: 't'.repeat(101) });
+    const title = await api.patch(url).send({ title: 't'.repeat(101) });
     expect(title.status).toBe(400);
     expect(title.body.error.fields.title).toEqual(expect.any(String));
   });
@@ -190,9 +193,9 @@ describe('PATCH /api/collections/:id/items/:itemId', () => {
   it('resets a blank title to the tag-derived default', async () => {
     const { collectionId, itemId } = await savedItemIn('Coast trip');
     const url = `/api/collections/${collectionId}/items/${itemId}`;
-    await request(app).patch(url).send({ title: 'Custom' });
+    await api.patch(url).send({ title: 'Custom' });
 
-    const res = await request(app).patch(url).send({ title: '   ' });
+    const res = await api.patch(url).send({ title: '   ' });
 
     expect(res.status).toBe(200);
     expect(res.body.item.title).toBe('Lighthouse, coast');
@@ -202,7 +205,7 @@ describe('PATCH /api/collections/:id/items/:itemId', () => {
     const { itemId } = await savedItemIn('Coast trip');
     const otherCollection = await createCollection('Other');
 
-    const res = await request(app)
+    const res = await api
       .patch(`/api/collections/${otherCollection}/items/${itemId}`)
       .send({ note: 'hi' });
 
@@ -212,9 +215,7 @@ describe('PATCH /api/collections/:id/items/:itemId', () => {
 
   it('rejects an empty update', async () => {
     const { collectionId, itemId } = await savedItemIn('Coast trip');
-    const res = await request(app)
-      .patch(`/api/collections/${collectionId}/items/${itemId}`)
-      .send({});
+    const res = await api.patch(`/api/collections/${collectionId}/items/${itemId}`).send({});
     expect(res.status).toBe(400);
   });
 });
@@ -223,13 +224,13 @@ describe('DELETE /api/collections/:id/items/:itemId', () => {
   it('removes the image from one collection only and keeps the shared image copy', async () => {
     const a = await savedItemIn('A');
     const b = await savedItemIn('B');
-    await request(app)
+    await api
       .patch(`/api/collections/${b.collectionId}/items/${b.itemId}`)
       .send({ title: 'Kept in B', note: 'still here' });
     const before = (await Collection.findById(a.collectionId))!.updatedAt;
     await new Promise((resolve) => setTimeout(resolve, 10));
 
-    const res = await request(app).delete(`/api/collections/${a.collectionId}/items/${a.itemId}`);
+    const res = await api.delete(`/api/collections/${a.collectionId}/items/${a.itemId}`);
 
     expect(res.status).toBe(204);
     expect(await SavedItem.exists({ _id: a.itemId })).toBeNull();
@@ -243,9 +244,9 @@ describe('DELETE /api/collections/:id/items/:itemId', () => {
   it('deletes the stored image copy once no collection uses it', async () => {
     const a = await savedItemIn('A');
     const b = await savedItemIn('B');
-    await request(app).delete(`/api/collections/${a.collectionId}/items/${a.itemId}`);
+    await api.delete(`/api/collections/${a.collectionId}/items/${a.itemId}`);
 
-    const res = await request(app).delete(`/api/collections/${b.collectionId}/items/${b.itemId}`);
+    const res = await api.delete(`/api/collections/${b.collectionId}/items/${b.itemId}`);
 
     expect(res.status).toBe(204);
     expect(await ImageAsset.countDocuments()).toBe(0);
@@ -253,9 +254,9 @@ describe('DELETE /api/collections/:id/items/:itemId', () => {
 
   it('returns ITEM_NOT_FOUND when removing the same item twice', async () => {
     const { collectionId, itemId } = await savedItemIn('A');
-    await request(app).delete(`/api/collections/${collectionId}/items/${itemId}`);
+    await api.delete(`/api/collections/${collectionId}/items/${itemId}`);
 
-    const res = await request(app).delete(`/api/collections/${collectionId}/items/${itemId}`);
+    const res = await api.delete(`/api/collections/${collectionId}/items/${itemId}`);
 
     expect(res.status).toBe(404);
     expect(res.body.error.code).toBe('ITEM_NOT_FOUND');

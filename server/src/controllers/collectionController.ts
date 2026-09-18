@@ -7,12 +7,15 @@ import type {
 } from '../schemas/collectionSchemas.js';
 import type { IdParams } from '../schemas/common.js';
 import * as collectionService from '../services/collectionService.js';
-import { toCollectionSummary, toSavedItem } from '../utils/toDto.js';
+import { toCollectionDetail, toCollectionSummary, toSharedSummary } from '../utils/toDto.js';
 
 export async function listCollections(req: Request, res: Response) {
   const { sourceId } = res.locals.query as ListCollectionsQuery;
-  const rows = await collectionService.listForOwner(req.userId, sourceId);
-  res.json({ collections: rows.map((row) => toCollectionSummary(row.collection, row.stats)) });
+  const { owned, shared } = await collectionService.listForUser(req.userId, sourceId);
+  res.json({
+    collections: owned.map((row) => toCollectionSummary(row.collection, row.stats)),
+    shared: shared.map((row) => toSharedSummary(row.collection, row.stats, row.owner, row.role)),
+  });
 }
 
 export async function createCollection(req: Request, res: Response) {
@@ -23,10 +26,11 @@ export async function createCollection(req: Request, res: Response) {
 
 export async function getCollection(req: Request, res: Response) {
   const { id } = res.locals.params as IdParams;
-  const { collection, stats, items } = await collectionService.getCollectionDetail(req.userId, id);
-  res.json({
-    collection: { ...toCollectionSummary(collection, stats), items: items.map(toSavedItem) },
-  });
+  const { collection, stats, items, role } = await collectionService.getCollectionDetail(
+    req.userId,
+    id,
+  );
+  res.json({ collection: toCollectionDetail(collection, stats, items, role) });
 }
 
 export async function updateCollection(req: Request, res: Response) {

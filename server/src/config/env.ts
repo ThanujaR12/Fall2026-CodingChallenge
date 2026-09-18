@@ -6,6 +6,8 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(4000),
   MONGODB_URI: z.string().min(1),
   PIXABAY_API_KEY: z.string().min(1),
+  // Signs session tokens; anyone with it could forge a sign-in, so it lives only in server/.env.
+  JWT_SECRET: z.string().min(16, 'JWT_SECRET must be at least 16 characters'),
   CLIENT_ORIGIN: z.url().default('http://localhost:5173'),
   NODE_ENV: z.string().default('development'),
 });

@@ -5,7 +5,8 @@ import { SavedItem } from '../models/SavedItem.js';
 import { AppError } from '../utils/AppError.js';
 import { splitTags, titleFromTags } from '../utils/titleFromTags.js';
 import { removeOrphanAssets } from './assetService.js';
-import { getOwnedCollection, touchCollection } from './collectionService.js';
+import { touchCollection } from './collectionService.js';
+import { assertCan, resolveAccess } from './permissionService.js';
 import * as pixabay from './pixabayService.js';
 
 function isDuplicateKey(err: unknown): boolean {
@@ -38,8 +39,15 @@ async function findOrCreateAsset(hit: pixabay.PixabayHit) {
   }
 }
 
-export async function saveItem(ownerId: Types.ObjectId, collectionId: string, sourceId: string) {
-  const collection = await getOwnedCollection(ownerId, collectionId);
+// Owners and editors may change items; viewers and outsiders are refused before anything happens.
+async function editableCollection(userId: Types.ObjectId, collectionId: string) {
+  const { collection, role } = await resolveAccess(userId, collectionId);
+  assertCan(role, 'editItems');
+  return collection;
+}
+
+export async function saveItem(userId: Types.ObjectId, collectionId: string, sourceId: string) {
+  const collection = await editableCollection(userId, collectionId);
 
   if (await SavedItem.exists({ collectionId: collection._id, source: 'pixabay', sourceId })) {
     throw new AppError(409, 'ITEM_ALREADY_SAVED', 'This image is already in that collection.');
@@ -54,7 +62,7 @@ export async function saveItem(ownerId: Types.ObjectId, collectionId: string, so
   const asset = await findOrCreateAsset(hit);
   const item = await SavedItem.create({
     collectionId: collection._id,
-    addedBy: ownerId,
+    addedBy: userId,
     source: 'pixabay',
     sourceId,
     asset: asset._id,
@@ -67,7 +75,7 @@ export async function saveItem(ownerId: Types.ObjectId, collectionId: string, so
   });
 
   await touchCollection(collection._id);
-  return item;
+  return item.populate('addedBy', 'username');
 }
 
 async function getItemInCollection(collectionId: Types.ObjectId, itemId: string) {
@@ -76,13 +84,14 @@ async function getItemInCollection(collectionId: Types.ObjectId, itemId: string)
   return item;
 }
 
+// Last save wins: two members editing the same item simply overwrite in order (FR-024).
 export async function updateItem(
-  ownerId: Types.ObjectId,
+  userId: Types.ObjectId,
   collectionId: string,
   itemId: string,
   changes: { title?: string; note?: string },
 ) {
-  const collection = await getOwnedCollection(ownerId, collectionId);
+  const collection = await editableCollection(userId, collectionId);
   const item = await getItemInCollection(collection._id, itemId);
 
   if (changes.title !== undefined) {
@@ -93,12 +102,12 @@ export async function updateItem(
 
   await item.save();
   await touchCollection(collection._id);
-  return item;
+  return item.populate('addedBy', 'username');
 }
 
 // Removes the image from this collection only; the same image in other collections is untouched.
-export async function removeItem(ownerId: Types.ObjectId, collectionId: string, itemId: string) {
-  const collection = await getOwnedCollection(ownerId, collectionId);
+export async function removeItem(userId: Types.ObjectId, collectionId: string, itemId: string) {
+  const collection = await editableCollection(userId, collectionId);
   const item = await getItemInCollection(collection._id, itemId);
 
   await item.deleteOne();

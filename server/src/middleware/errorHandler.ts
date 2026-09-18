@@ -15,6 +15,16 @@ function duplicateKeyError(err: { keyPattern?: Record<string, unknown> }): AppEr
       'A collection with that name already exists.',
     );
   }
+  if (keys.includes('usernameKey')) {
+    return new AppError(409, 'USERNAME_TAKEN', 'That username is already taken.', {
+      username: 'That username is already taken.',
+    });
+  }
+  if (keys.includes('email')) {
+    return new AppError(409, 'EMAIL_TAKEN', 'An account with that email already exists.', {
+      email: 'An account with that email already exists.',
+    });
+  }
   if (keys.includes('collectionId') && keys.includes('sourceId')) {
     return new AppError(409, 'ITEM_ALREADY_SAVED', 'This image is already in that collection.');
   }

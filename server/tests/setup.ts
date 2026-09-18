@@ -34,9 +34,10 @@ afterEach(async () => {
   vi.clearAllMocks();
   const { collections } = mongoose.connection;
   await Promise.all(
-    Object.entries(collections)
-      .filter(([name]) => name !== 'users')
-      .map(([, collection]) => collection.deleteMany({})),
+    Object.entries(collections).map(([name, collection]) =>
+      // Keep the built-in stand-in user; remove every account a test created.
+      collection.deleteMany(name === 'users' ? { isStandIn: { $ne: true } } : {}),
+    ),
   );
 });
 
