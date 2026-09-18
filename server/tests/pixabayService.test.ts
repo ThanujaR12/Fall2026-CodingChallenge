@@ -50,6 +50,20 @@ describe('browseImages', () => {
     expect(url.searchParams.has('editors_choice')).toBe(false);
   });
 
+  it('asks for "black and white" with the grayscale filter so color photos stay out', async () => {
+    fetchMock.mockImplementation(async () => jsonResponse({ total: 50, totalHits: 50, hits }));
+
+    await service.browseImages('all', 1, 'grayscale');
+    await service.searchImages('flowers', 1, 'grayscale');
+    await service.browseImages('interiors', 1, 'grayscale');
+
+    const [browse, search, topic] = fetchMock.mock.calls.map((call) => new URL(String(call[0])));
+    expect(browse.searchParams.get('q')).toBe('black and white');
+    expect(browse.searchParams.get('colors')).toBe('grayscale');
+    expect(search.searchParams.get('q')).toBe('flowers black and white');
+    expect(topic.searchParams.get('q')).toBe('interior design black and white');
+  });
+
   it('caches each topic page separately from searches', async () => {
     fetchMock.mockImplementation(async () => jsonResponse({ total: 3, totalHits: 3, hits }));
 

@@ -232,7 +232,9 @@ Popular photos for the home feed, no keyword needed (safe search on, 20 per page
   - `topic` (optional): one of `all` (editor's choice, the default), `nature`, `travel`, `food`,
     `fashion`, `animals`, `architecture`, `interiors`, `flowers`, `cozy`, `city`, `art`
   - `color` (optional): one of `red`, `orange`, `yellow`, `green`, `turquoise`, `blue`, `lilac`,
-    `pink`, `brown`, `black`, `gray`, `white`, `grayscale` (with `all`, widens to all popular photos)
+    `pink`, `brown`, `black`, `gray`, `white`, `grayscale` (with `all`, widens to all popular photos;
+    `grayscale` also adds the words "black and white" to the query, since Pixabay's grayscale filter
+    alone lets color photos through)
   - `page` (optional): integer ≥ 1, default `1`; `page × 20` must be ≤ 500
 - **Response 200**: the same shape as `GET /search/images`, plus `"topic": "all"` and `"color": null` (or the color name)
 - **Errors**: `400 VALIDATION_ERROR` (unknown topic or unreachable page), `502 IMAGE_SOURCE_UNAVAILABLE`

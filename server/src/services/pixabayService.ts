@@ -74,9 +74,18 @@ async function fetchPage(
   return result;
 }
 
+// Adds Pixabay's color filter. Its "grayscale" filter alone lets many color photos through (in
+// testing, 4–9 of every 20), but paired with the words "black and white" the results come back
+// truly black and white (0 of 60), so grayscale always asks for both.
+function withColor(filters: Record<string, string>, color?: ImageColor): Record<string, string> {
+  if (!color) return filters;
+  const next: Record<string, string> = { ...filters, colors: color };
+  if (color === 'grayscale') next.q = [filters.q, 'black and white'].filter(Boolean).join(' ');
+  return next;
+}
+
 export function searchImages(q: string, page: number, color?: ImageColor) {
-  const filters: Record<string, string> = color ? { q, colors: color } : { q };
-  return fetchPage(`q:${q.toLowerCase()}|${color ?? ''}|${page}`, filters, page);
+  return fetchPage(`q:${q.toLowerCase()}|${color ?? ''}|${page}`, withColor({ q }, color), page);
 }
 
 /** Popular photos for a home-feed topic, no keyword needed, optionally in one color. */
@@ -84,8 +93,7 @@ export function browseImages(topic: FeedTopic, page: number, color?: ImageColor)
   // Editor's choice is too small a pool once a color is applied, so "all" widens to popular.
   const base: Record<string, string> =
     color && topic === 'all' ? { order: 'popular' } : { ...FEED_TOPICS[topic] };
-  const filters = color ? { ...base, colors: color } : base;
-  return fetchPage(`feed:${topic}|${color ?? ''}|${page}`, filters, page);
+  return fetchPage(`feed:${topic}|${color ?? ''}|${page}`, withColor(base, color), page);
 }
 
 export async function getImageById(id: string): Promise<PixabayHit | null> {
