@@ -291,6 +291,9 @@ HOW IT IS DEPLOYED (all free plans)
 --------------------------------------------------------------------------------
 8. HOW I WORKED
 --------------------------------------------------------------------------------
+  - Built with Claude Code (AI pair programmer) using a Spec Kit workflow: I wrote
+    the requirements, made the product and design decisions, and reviewed and
+    tested every step; Claude helped write the code and planning documents.
   - Planned before coding: each of the three features has a written spec, plan,
     data model, API contract, and task list in specs/.
   - Built in three stages: (1) search, boards, and saving; (2) accounts, sharing,
