@@ -1,5 +1,5 @@
 // App-wide constants: display name, page size, and the input limits the server enforces.
-export const APP_NAME = 'Palette Boards';
+export const APP_NAME = 'PixBoard';
 
 export const PAGE_SIZE = 20;
 export const MAX_QUERY = 100;

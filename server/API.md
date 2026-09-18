@@ -1,6 +1,6 @@
 # PixBoard API
 
-REST API for PixBoard (displayed as "Palette Boards"): search Pixabay images, organize them into
+REST API for PixBoard: search Pixabay images, organize them into
 collections, edit or remove saved items, and share collections by link or with collaborators.
 
 - **Base URL**: `http://localhost:4000/api`

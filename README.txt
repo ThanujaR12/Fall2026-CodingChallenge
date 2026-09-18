@@ -1,4 +1,4 @@
-PIXBOARD (displayed in the app as "Palette Boards")
+PIXBOARD
 Change++ Fall 2026 Coding Challenge — image saving/sharing app
 
 Name:              Thanuja Rameshbaabu
@@ -23,10 +23,6 @@ give them your own titles and notes, and find them again later.
     change their roles, remove them, or let them leave; see who added each image
   - Every permission is enforced by the server, not just hidden in the page
   - Works on phones (375px wide) through desktop
-
-The display name "Palette Boards" comes from the design mockups; change APP_NAME in
-client/src/lib/constants.ts to rename it.
-
 
 HOW IT IS BUILT
 ---------------
