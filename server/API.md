@@ -254,6 +254,24 @@ A single Pixabay photo's page and photos like it. No sign-in needed.
 - **Errors**: `400 VALIDATION_ERROR` (not a numeric id), `404 IMAGE_NOT_FOUND`,
   `502 IMAGE_SOURCE_UNAVAILABLE`
 
+### `POST /photos/understand`
+
+"Search with a photo": what a photo shows, for finding similar photos. The photo is sent to Claude
+(`claude-opus-5`, low effort, structured output) and discarded; it is never stored or logged. Needs
+`ANTHROPIC_API_KEY` on the server; without it the client falls back to on-device recognition.
+
+- **Auth**: token required; limited to 20 photos per minute per person
+- **Body**: `{ "image": "data:image/jpeg;base64,…" }` (JPEG, PNG, or WebP; up to about 3 MB)
+- **Response 200**:
+  `{ "understanding": { "description": "A box of 12 Crayola chalk sticks…", "subject": "chalk box", "brands": ["Crayola"], "text": ["Crayola", "Chalk", "12"], "keywords": ["crayola chalk", "chalk box"] } }`
+- **Errors**: `400 VALIDATION_ERROR`, `401 UNAUTHENTICATED`, `422 VISION_NO_RESULT`,
+  `429 TOO_MANY_REQUESTS` / `429 VISION_BUSY`, `502 VISION_UNAVAILABLE`, `503 VISION_DISABLED`
+
+### `GET /photos/understand/status`
+
+- **Auth**: none
+- **Response 200**: `{ "enabled": true }` when the server has an Anthropic API key
+
 ### `GET /photos/:sourceId/similar?by=&page=`
 
 "More like this". `by=subject` (default) searches the photo's two main tags (widening to one if that

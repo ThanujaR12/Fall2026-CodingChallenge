@@ -1,9 +1,24 @@
-// Search with a photo: recognises what's in it with MobileNet and reads its colours, all inside the
-// browser. The photo never leaves the device; only the words it finds are used to search.
-// TensorFlow.js is loaded on first use, so it costs nothing until someone opens the camera.
+// Search with a photo: works out what a photo shows and which words will find photos like it.
+//  1. Claude on the server (when set up) names brands, printed words, and the subject.
+//  2. Tesseract OCR, in the browser, always reads printed words (brand names, titles, labels).
+//  3. MobileNet, in the browser, recognises everyday objects when Claude isn't available.
+// The on-device engines load only on first use, so they cost nothing until the camera is opened.
+import { understandPhoto, visionEnabled } from '@/api/vision';
 
-export type DetectedLabel = { name: string; probability: number };
-export type PhotoAnalysis = { labels: DetectedLabel[]; palette: string[] };
+export type Guess = { name: string; probability?: number };
+
+export type PhotoAnalysis = {
+  /** "claude" when the server understood it; "device" when only on-device engines ran. */
+  source: 'claude' | 'device';
+  description: string | null;
+  /** Brand names first, then other printed words. */
+  words: string[];
+  /** Search ideas, best first. */
+  guesses: Guess[];
+  palette: string[];
+};
+
+// ---------- MobileNet (objects, on device) ----------
 
 type Classifier = {
   classify: (
@@ -35,10 +50,101 @@ export function loadModel(): Promise<Classifier> {
   return modelPromise;
 }
 
-// ImageNet names list synonyms ("tabby, tabby cat"); the first is the clearest search word.
-function cleanLabel(className: string): string {
-  return className.split(',')[0].trim().replace(/_/g, ' ');
+async function objectGuesses(img: HTMLImageElement): Promise<Guess[]> {
+  const model = await loadModel();
+  const predictions = await model.classify(img, 5);
+  const seen = new Set<string>();
+  return (
+    predictions
+      // ImageNet names list synonyms ("tabby, tabby cat"); the first is the clearest search word.
+      .map((p) => ({ name: p.className.split(',')[0].trim(), probability: p.probability }))
+      .filter((g) => (seen.has(g.name) ? false : (seen.add(g.name), true)))
+      .filter((g, index) => index === 0 || g.probability >= 0.05)
+      .slice(0, 4)
+  );
 }
+
+// ---------- Tesseract (printed words, on device) ----------
+
+type OcrWord = { text: string; confidence: number };
+
+type OcrWorker = {
+  setParameters: (params: Record<string, string>) => Promise<unknown>;
+  recognize: (
+    img: HTMLImageElement | HTMLCanvasElement,
+    options?: object,
+    output?: object,
+  ) => Promise<{
+    data: { blocks: { paragraphs: { lines: { words: OcrWord[] }[] }[] }[] | null };
+  }>;
+};
+
+let ocrPromise: Promise<OcrWorker> | null = null;
+
+/** Starts the English OCR engine once (about 5 MB, cached by the browser). */
+export function loadOcr(): Promise<OcrWorker> {
+  ocrPromise ??= import('tesseract.js')
+    .then(async ({ createWorker, PSM }) => {
+      const worker = (await createWorker('eng')) as unknown as OcrWorker;
+      // "Sparse text" finds scattered words anywhere in a photo (labels, signs, packaging),
+      // where the default document layout mode finds nothing.
+      await worker.setParameters({ tessedit_pageseg_mode: PSM.SPARSE_TEXT });
+      return worker;
+    })
+    .catch((err) => {
+      ocrPromise = null;
+      throw err;
+    });
+  return ocrPromise;
+}
+
+// Enlarged copies help with small print; grayscale helps with coloured backgrounds.
+function enlarged(img: HTMLImageElement, grayscale: boolean): HTMLCanvasElement {
+  const scale = Math.min(2, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(img.naturalWidth * scale);
+  canvas.height = Math.round(img.naturalHeight * scale);
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  if (!ctx) return canvas;
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  if (grayscale) {
+    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const d = pixels.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const g = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+      d[i] = d[i + 1] = d[i + 2] = g;
+    }
+    ctx.putImageData(pixels, 0, 0);
+  }
+  return canvas;
+}
+
+// Words worth searching: confident, mostly letters, and not filler.
+const FILLER = new Set(['the', 'and', 'for', 'with', 'you', 'your', 'are', 'www', 'com', 'net']);
+
+async function printedWords(img: HTMLImageElement): Promise<string[]> {
+  const worker = await loadOcr();
+  // Two passes catch different words (on a chalk box, colour reads "Chalk", grayscale "Crayola").
+  const words: OcrWord[] = [];
+  for (const pass of [enlarged(img, false), enlarged(img, true)]) {
+    const { data } = await worker.recognize(pass, {}, { blocks: true });
+    for (const block of data.blocks ?? []) {
+      for (const paragraph of block.paragraphs) {
+        for (const line of paragraph.lines) words.push(...line.words);
+      }
+    }
+  }
+  const seen = new Set<string>();
+  return words
+    .filter((w) => w.confidence >= 70)
+    .sort((a, b) => b.confidence - a.confidence)
+    .map((w) => w.text.replace(/[^\p{L}\p{N}&'-]/gu, ''))
+    .filter((t) => t.length >= 3 && /\p{L}/u.test(t) && !FILLER.has(t.toLowerCase()))
+    .filter((t) => (seen.has(t.toLowerCase()) ? false : (seen.add(t.toLowerCase()), true)))
+    .slice(0, 6);
+}
+
+// ---------- Colours (on device) ----------
 
 function toHex(r: number, g: number, b: number): string {
   return `#${[r, g, b].map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')}`.toUpperCase();
@@ -70,21 +176,60 @@ export function paletteFromImage(img: HTMLImageElement | HTMLCanvasElement, size
     .map((g) => toHex(g.r / g.count, g.g / g.count, g.b / g.count));
 }
 
-/** What's in the photo (best guesses first) and its colours. */
-export async function analyzePhoto(img: HTMLImageElement): Promise<PhotoAnalysis> {
-  const model = await loadModel();
-  const predictions = await model.classify(img, 5);
-  const seen = new Set<string>();
-  const labels = predictions
-    .map((p) => ({ name: cleanLabel(p.className), probability: p.probability }))
-    .filter((l) => (seen.has(l.name) ? false : (seen.add(l.name), true)))
-    // Keep confident guesses, but always at least the top one.
-    .filter((l, index) => index === 0 || l.probability >= 0.05)
-    .slice(0, 4);
-  return { labels, palette: paletteFromImage(img) };
+// ---------- Putting it together ----------
+
+/** Warms up whichever engines this visit will use, while the person picks a photo. */
+export async function warmUp() {
+  void loadOcr().catch(() => {});
+  if (!(await visionEnabled())) void loadModel().catch(() => {});
 }
 
-/** Loads a data URL into an image element, ready for analysis. */
+function mergeWords(...lists: string[][]): string[] {
+  const seen = new Set<string>();
+  return lists
+    .flat()
+    .filter((w) => (seen.has(w.toLowerCase()) ? false : (seen.add(w.toLowerCase()), true)))
+    .slice(0, 8);
+}
+
+export async function analyzePhoto(img: HTMLImageElement, dataUrl: string): Promise<PhotoAnalysis> {
+  const palette = paletteFromImage(img);
+  const ocr = printedWords(img).catch(() => [] as string[]);
+
+  if (await visionEnabled()) {
+    const [understanding, words] = await Promise.all([
+      understandPhoto(dataUrl).catch(() => null),
+      ocr,
+    ]);
+    if (understanding) {
+      return {
+        source: 'claude',
+        description: understanding.description,
+        words: mergeWords(understanding.brands, understanding.text, words),
+        guesses: understanding.keywords.map((name) => ({ name })),
+        palette,
+      };
+    }
+  }
+
+  // No server understanding: printed words (if any) lead, then recognised objects.
+  const [words, objects] = await Promise.all([ocr, objectGuesses(img)]);
+  const guesses: Guess[] =
+    words.length > 0 ? [{ name: words.slice(0, 2).join(' ').toLowerCase() }] : [];
+  return {
+    source: 'device',
+    description: null,
+    words,
+    // With real words to go on, weak object guesses are more noise than help.
+    guesses: [
+      ...guesses,
+      ...objects.filter((o) => words.length === 0 || (o.probability ?? 0) >= 0.15),
+    ],
+    palette,
+  };
+}
+
+/** Loads an image from a URL (data or blob), ready for analysis. */
 export function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();

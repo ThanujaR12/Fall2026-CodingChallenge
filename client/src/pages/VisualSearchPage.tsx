@@ -1,5 +1,5 @@
-// Results of "Search with a photo": your photo, what we recognised (pick which to search), its
-// colours, and photos matching by subject or by colour.
+// Results of "Search with a photo": your photo, its description, the brands and words read from it,
+// search ideas (pick which to search), its colours, and photos matching by subject or by colour.
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
 import { Camera, Palette, Shapes } from '@phosphor-icons/react';
@@ -23,11 +23,38 @@ const renderSaveAction = (result: SearchResult) => (
 );
 
 function Results({ state }: { state: VisualState }) {
-  const [label, setLabel] = useState(state.labels[0]?.name ?? '');
+  // Start with the best idea: the AI's first search, or printed words, or the top object guess.
+  const [query, setQuery] = useState(state.guesses[0]?.name ?? state.words[0] ?? '');
   const [by, setBy] = useState<SimilarBy>('subject');
   const color = state.palette[0] ? nearestImageColor(state.palette[0]) : null;
   const colorLabel = IMAGE_COLORS.find((c) => c.id === color)?.label.toLowerCase();
-  const search = useImageSearch(label, by === 'color' ? color : null);
+  const search = useImageSearch(query, by === 'color' ? color : null);
+
+  const chip = (value: string, extra?: string) => (
+    <button
+      key={value}
+      type="button"
+      role="radio"
+      aria-checked={value === query}
+      onClick={() => setQuery(value)}
+      className={cn(
+        'inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-full px-4 text-[15px] font-semibold transition-colors',
+        value === query ? 'bg-ink text-paper' : 'bg-surface hover:bg-neutral-200',
+      )}
+    >
+      {value}
+      {extra && (
+        <span
+          className={cn(
+            'text-[12px] font-normal',
+            value === query ? 'text-paper/80' : 'text-ink/65',
+          )}
+        >
+          {extra}
+        </span>
+      )}
+    </button>
+  );
 
   const option = (value: SimilarBy, text: string, Icon: typeof Shapes) => (
     <button
@@ -53,34 +80,35 @@ function Results({ state }: { state: VisualState }) {
           className="w-full rounded-2xl object-cover md:max-h-[320px]"
         />
         <div className="grid gap-5">
-          <div>
-            <p className="label-caps mb-2">We see</p>
-            <div role="radiogroup" aria-label="Search for" className="flex flex-wrap gap-2">
-              {state.labels.map((l) => (
-                <button
-                  key={l.name}
-                  type="button"
-                  role="radio"
-                  aria-checked={l.name === label}
-                  onClick={() => setLabel(l.name)}
-                  className={cn(
-                    'inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-full px-4 text-[15px] font-semibold transition-colors',
-                    l.name === label ? 'bg-ink text-paper' : 'bg-surface hover:bg-neutral-200',
+          {state.description && (
+            <p className="text-[18px] leading-snug">
+              {state.description}
+              <span className="mt-1 block text-[12px] text-ink/65">Recognised with AI</span>
+            </p>
+          )}
+          <div role="radiogroup" aria-label="Search for" className="grid gap-4">
+            {state.words.length > 0 && (
+              <div>
+                <p className="label-caps mb-2">Brands and words</p>
+                <div className="flex flex-wrap gap-2">{state.words.map((w) => chip(w))}</div>
+              </div>
+            )}
+            {state.guesses.length > 0 && (
+              <div>
+                <p className="label-caps mb-2">Search ideas</p>
+                <div className="flex flex-wrap gap-2">
+                  {state.guesses.map((g) =>
+                    chip(
+                      g.name,
+                      g.probability !== undefined
+                        ? `${Math.round(g.probability * 100)}%`
+                        : undefined,
+                    ),
                   )}
-                >
-                  {l.name}
-                  <span
-                    className={cn(
-                      'text-[12px] font-normal',
-                      l.name === label ? 'text-paper/80' : 'text-ink/65',
-                    )}
-                  >
-                    {Math.round(l.probability * 100)}%
-                  </span>
-                </button>
-              ))}
-            </div>
-            <p className="mt-2 text-[13px] text-ink/70">Not quite right? Pick another guess.</p>
+                </div>
+              </div>
+            )}
+            <p className="-mt-2 text-[13px] text-ink/70">Tap any of these to search it instead.</p>
           </div>
           <div>
             <p className="label-caps mb-2">Its colours</p>
@@ -96,7 +124,7 @@ function Results({ state }: { state: VisualState }) {
               Photos like yours
             </h2>
             <p className="mt-1 text-[13px] text-ink/70">
-              Matching “{label}”{by === 'color' && colorLabel ? ` in ${colorLabel} tones` : ''}
+              Matching “{query}”{by === 'color' && colorLabel ? ` in ${colorLabel} tones` : ''}
             </p>
           </div>
           <div
@@ -111,12 +139,12 @@ function Results({ state }: { state: VisualState }) {
         {!search.isPending && !search.isError && search.results.length === 0 ? (
           <EmptyState
             icon={<Camera size={34} weight="duotone" />}
-            title={`No photos for “${label}”${by === 'color' ? ' in these colours' : ''}.`}
+            title={`No photos for “${query}”${by === 'color' ? ' in these colours' : ''}.`}
             body="Try another guess above, or switch between subject and colours."
           />
         ) : (
           <ImageFeed
-            key={`${label}|${by}`}
+            key={`${query}|${by}`}
             feed={{ ...search, hasNextPage: search.hasNextPage ?? false }}
             label="Photos like yours"
             renderSaveAction={renderSaveAction}
@@ -146,7 +174,7 @@ export function VisualSearchPage() {
           </div>
         )}
       </div>
-      {state && state.labels.length > 0 ? (
+      {state && (state.guesses.length > 0 || state.words.length > 0) ? (
         // Keyed by the photo so a new search starts fresh.
         <Results key={state.image.slice(-64)} state={state} />
       ) : (

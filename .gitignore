@@ -9,3 +9,6 @@ client/dist/
 coverage/
 **/.env
 !**/.env.example
+
+# Tesseract language data cached by local OCR experiments
+*.traineddata

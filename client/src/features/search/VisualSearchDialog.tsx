@@ -12,7 +12,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { analyzePhoto, loadImage, loadModel } from '@/lib/visualSearch';
+import { useQuery } from '@tanstack/react-query';
+import { visionEnabled } from '@/api/vision';
+import { analyzePhoto, loadImage, warmUp } from '@/lib/visualSearch';
 import { cn } from '@/lib/utils';
 
 type Step = 'choose' | 'camera' | 'scanning';
@@ -46,6 +48,11 @@ export function VisualSearchDialog() {
   const streamRef = useRef<MediaStream | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const captureRef = useRef<HTMLInputElement>(null);
+  const vision = useQuery({
+    queryKey: ['vision-enabled'],
+    queryFn: visionEnabled,
+    staleTime: Infinity,
+  });
   const canUseCamera =
     typeof navigator !== 'undefined' && Boolean(navigator.mediaDevices?.getUserMedia);
 
@@ -57,8 +64,8 @@ export function VisualSearchDialog() {
   function handleOpenChange(next: boolean) {
     setOpen(next);
     if (next) {
-      // Start fetching the model while the person picks a photo.
-      void loadModel().catch(() => {});
+      // Start the recognition engines while the person picks a photo.
+      void warmUp();
     } else {
       stopCamera();
       setStep('choose');
@@ -76,7 +83,7 @@ export function VisualSearchDialog() {
     setError(null);
     try {
       const img = await loadImage(dataUrl);
-      const analysis = await analyzePhoto(img);
+      const analysis = await analyzePhoto(img, dataUrl);
       handleOpenChange(false);
       navigate('/visual-search', { state: { image: dataUrl, ...analysis } });
     } catch {
@@ -199,7 +206,9 @@ export function VisualSearchDialog() {
             )}
             <p className="flex items-center gap-1.5 text-[12px] text-ink/70">
               <LockSimple size={14} aria-hidden="true" />
-              Your photo stays on this device. Only the words we recognise are searched.
+              {vision.data
+                ? 'Your photo is analysed to read brands and words, then discarded. It is never stored.'
+                : 'Your photo stays on this device. Only the words we recognise are searched.'}
             </p>
           </div>
         )}
@@ -248,7 +257,7 @@ export function VisualSearchDialog() {
             </div>
             <p className="flex items-center gap-2 text-[14px] text-ink/80">
               <CircleNotch size={16} className="animate-spin" aria-hidden="true" />
-              Looking closely at your photo…
+              Reading words and looking closely at your photo…
             </p>
           </div>
         )}
