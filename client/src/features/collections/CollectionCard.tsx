@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { assetUrl } from '@/api/client';
 import { ImageCredit } from '@/components/ImageCredit';
 import { LazyImage } from '@/components/LazyImage';
+import { EMPTY_PALETTE } from '@/lib/colors';
 import { imageCount, updatedAgo } from '@/lib/format';
 import type { CollectionSummary, SharedCollectionSummary } from '@/types/api';
 
@@ -32,7 +33,13 @@ export function CollectionCard({ collection }: CollectionCardProps) {
             <span className="text-[13px] text-ink/65 italic">No images yet</span>
           </div>
         )}
-        {collection.palette.length > 0 && (
+        {collection.palette.length === 0 ? (
+          <div className="flex h-2" aria-hidden="true">
+            {EMPTY_PALETTE.map((color) => (
+              <span key={color} className="flex-1" style={{ backgroundColor: color }} />
+            ))}
+          </div>
+        ) : (
           <div
             className="flex h-2"
             role="img"

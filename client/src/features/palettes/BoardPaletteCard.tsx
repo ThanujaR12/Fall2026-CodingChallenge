@@ -4,8 +4,8 @@ import { Copy, DownloadSimple, MagnifyingGlass } from '@phosphor-icons/react';
 import { assetUrl } from '@/api/client';
 import { PaletteStrip } from '@/components/PaletteStrip';
 import { Button } from '@/components/ui/button';
-import { copyText } from '@/lib/clipboard';
 import { imageCount } from '@/lib/format';
+import { copyPalette, downloadPalette } from '@/lib/palette';
 import type { CollectionSummary } from '@/types/api';
 
 type BoardPaletteCardProps = {
@@ -14,16 +14,6 @@ type BoardPaletteCardProps = {
   ownerLabel: string;
   onFindMore: (board: CollectionSummary) => void;
 };
-
-function downloadPalette(board: CollectionSummary) {
-  const text = [`${board.name} — PixBoard palette`, '', ...board.palette].join('\n');
-  const url = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `${board.name.replace(/[^\w-]+/g, '-').toLowerCase() || 'board'}-palette.txt`;
-  link.click();
-  URL.revokeObjectURL(url);
-}
 
 export function BoardPaletteCard({ board, ownerLabel, onFindMore }: BoardPaletteCardProps) {
   const hasColors = board.palette.length > 0;
@@ -59,15 +49,15 @@ export function BoardPaletteCard({ board, ownerLabel, onFindMore }: BoardPalette
 
       {hasColors ? (
         <div className="flex flex-wrap gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => copyText(board.palette.join('\n'), 'Palette copied')}
-          >
+          <Button variant="secondary" size="sm" onClick={() => copyPalette(board.palette)}>
             <Copy size={15} aria-hidden="true" />
             Copy all
           </Button>
-          <Button variant="secondary" size="sm" onClick={() => downloadPalette(board)}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => downloadPalette(board.name, board.palette)}
+          >
             <DownloadSimple size={15} aria-hidden="true" />
             Download
           </Button>

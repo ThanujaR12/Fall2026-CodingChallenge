@@ -27,7 +27,7 @@ export function CollectionHeader({ collection, actions, sharedAs }: CollectionHe
           {imageCount(collection.itemCount)} · {updatedAgo(collection.updatedAt)}
           {sharedAs && ` · by @${sharedAs.owner}`}
         </p>
-        <BoardPaletteBar palette={collection.palette} />
+        <BoardPaletteBar name={collection.name} palette={collection.palette} />
       </div>
       {actions && <div className="flex shrink-0 flex-wrap gap-2.5">{actions}</div>}
     </header>

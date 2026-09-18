@@ -109,7 +109,7 @@ export function SharedCollectionPage({ source = 'share' }: SharedCollectionPageP
             A board by <strong className="font-semibold text-ink">@{board.owner.username}</strong> ·{' '}
             {imageCount(board.itemCount)} · updated {savedOn(board.updatedAt)}
           </p>
-          <BoardPaletteBar palette={board.palette} />
+          <BoardPaletteBar name={board.name} palette={board.palette} />
         </header>
       </BoardHero>
 
