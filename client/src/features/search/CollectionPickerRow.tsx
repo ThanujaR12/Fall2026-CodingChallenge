@@ -1,22 +1,16 @@
-// One collection in the save picker: Save button, "Saving…" spinner, or an "Already saved" mark.
-import { Check, CircleNotch } from '@phosphor-icons/react';
+// One collection in the save picker: a Save button, or an "Already saved" mark.
+import { Check } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { imageCount } from '@/lib/format';
 import type { CollectionSummary, SharedCollectionSummary } from '@/types/api';
 
 type CollectionPickerRowProps = {
   collection: CollectionSummary | SharedCollectionSummary;
-  isSaving: boolean;
   disabled: boolean;
   onSave: () => void;
 };
 
-export function CollectionPickerRow({
-  collection,
-  isSaving,
-  disabled,
-  onSave,
-}: CollectionPickerRowProps) {
+export function CollectionPickerRow({ collection, disabled, onSave }: CollectionPickerRowProps) {
   const alreadySaved = collection.containsImage === true;
 
   return (
@@ -36,14 +30,6 @@ export function CollectionPickerRow({
         <span className="inline-flex shrink-0 items-center gap-1 text-[13px] text-ink/65">
           <Check size={14} weight="bold" aria-hidden="true" />
           Already saved
-        </span>
-      ) : isSaving ? (
-        <span
-          role="status"
-          className="inline-flex shrink-0 items-center gap-1.5 px-2.5 text-[13px] text-accent-deep"
-        >
-          <CircleNotch size={14} className="animate-spin" aria-hidden="true" />
-          Saving…
         </span>
       ) : (
         <Button

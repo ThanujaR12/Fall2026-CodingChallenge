@@ -1,6 +1,6 @@
 // A saved image's title and note: read view with Edit, or an edit form with Save changes / Cancel.
 import { useState, type FormEvent } from 'react';
-import { CircleNotch, PencilSimple } from '@phosphor-icons/react';
+import { PencilSimple } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { ApiError } from '@/api/client';
 import { Button } from '@/components/ui/button';
@@ -36,20 +36,19 @@ export function ItemEditForm({ item, canEdit }: ItemEditFormProps) {
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
     if (update.isPending) return;
+    // Optimistic: the new title and note show right away and the form closes.
+    setIsEditing(false);
     update.mutate(
       { itemId: item.id, changes: { title: title.trim(), note } },
       {
-        onSuccess: () => {
-          setIsEditing(false);
-          toast.success('Changes saved');
-        },
+        onSuccess: () => toast.success('Changes saved'),
         onError: (error) => {
-          // Field errors keep the form open so they can be fixed; any other failure
-          // (network, server, not found) returns the panel to the last saved values.
-          if (error instanceof ApiError && error.fields) return;
-          toast.error(`Couldn't save your changes. ${error.message}`);
-          update.reset();
-          setIsEditing(false);
+          // The panel has already rolled back to the saved values; reopen the form with what
+          // they typed so nothing is lost, showing any field errors next to their fields.
+          setIsEditing(true);
+          if (!(error instanceof ApiError && error.fields)) {
+            toast.error(`Couldn't save your changes. ${error.message}`);
+          }
         },
       },
     );
@@ -111,13 +110,8 @@ export function ItemEditForm({ item, canEdit }: ItemEditFormProps) {
       </div>
 
       <div className="flex gap-2.5">
-        <Button type="submit" disabled={update.isPending}>
-          {update.isPending && (
-            <CircleNotch size={16} className="animate-spin" aria-hidden="true" />
-          )}
-          Save changes
-        </Button>
-        <Button type="button" variant="ghost" onClick={cancel} disabled={update.isPending}>
+        <Button type="submit">Save changes</Button>
+        <Button type="button" variant="ghost" onClick={cancel}>
           Cancel
         </Button>
       </div>

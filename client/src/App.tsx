@@ -6,8 +6,7 @@ import { useAuth } from '@/features/auth/useAuth';
 import { MobileNav } from '@/features/navigation/MobileNav';
 import { Sidebar } from '@/features/navigation/Sidebar';
 import { SidebarProvider } from '@/features/navigation/SidebarProvider';
-import { ChatCircleDots, PlusSquare } from '@phosphor-icons/react';
-import { ComingSoonPage } from '@/pages/ComingSoonPage';
+import { CreatePage } from '@/pages/CreatePage';
 import { ExplorePage } from '@/pages/ExplorePage';
 import { NotificationsPage } from '@/pages/NotificationsPage';
 import { CollectionPage } from '@/pages/CollectionPage';
@@ -52,28 +51,8 @@ export default function App() {
           <Route path="collections" element={<CollectionsPage />} />
           <Route path="collections/:id" element={<CollectionPage />} />
           <Route path="palettes" element={<PalettesPage />} />
-          {/* Sidebar destinations still to be built. */}
-          <Route
-            path="create"
-            element={
-              <ComingSoonPage
-                title="Create"
-                icon={PlusSquare}
-                body="Start a new board or add photos from here."
-              />
-            }
-          />
+          <Route path="create" element={<CreatePage />} />
           <Route path="notifications" element={<NotificationsPage />} />
-          <Route
-            path="messages"
-            element={
-              <ComingSoonPage
-                title="Chat"
-                icon={ChatCircleDots}
-                body="Talk about boards with the people you build them with."
-              />
-            }
-          />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Route>

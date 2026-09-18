@@ -1,7 +1,6 @@
 // The app's main destinations, shared by the desktop sidebar and the phone bottom bar.
 import {
   Bell,
-  ChatCircleDots,
   Compass,
   House,
   Palette,
@@ -28,5 +27,4 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/palettes', label: 'Palettes', icon: Palette, colorful: true },
   { to: '/create', label: 'Create', icon: PlusSquare },
   { to: '/notifications', label: 'Notifications', icon: Bell, opensPanel: true },
-  { to: '/messages', label: 'Chat', icon: ChatCircleDots },
 ];

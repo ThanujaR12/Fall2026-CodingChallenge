@@ -1,6 +1,6 @@
 // "Save to collection" popover for a search result: pick a collection or create one, then save.
 import { useState } from 'react';
-import { BookmarkSimple, X } from '@phosphor-icons/react';
+import { BookmarkSimple, Check, X } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { ApiError } from '@/api/client';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCollections, useCreateCollection } from '@/features/collections/useCollections';
 import { useSaveItem } from '@/features/items/useItems';
+import { cn } from '@/lib/utils';
 import type { CollectionSummary, SearchResult } from '@/types/api';
 import { CollectionPickerRow } from './CollectionPickerRow';
 import { NewCollectionInline } from './NewCollectionInline';
@@ -23,7 +24,8 @@ export function SaveToCollectionPopover({
   appearance = 'button',
 }: SaveToCollectionPopoverProps) {
   const [open, setOpen] = useState(false);
-  const [savingTo, setSavingTo] = useState<string | null>(null);
+  // The board it was just saved to (shown on the button as "Saved").
+  const [savedTo, setSavedTo] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | undefined>();
   // True from pressing Create until the image is saved into the new collection.
   const [creating, setCreating] = useState(false);
@@ -32,26 +34,31 @@ export function SaveToCollectionPopover({
   const collections = useCollections(result.sourceId, { enabled: open });
   const createCollection = useCreateCollection();
   const saveItem = useSaveItem();
-  const busy = saveItem.isPending || createCollection.isPending || creating;
+  const busy = createCollection.isPending || creating;
 
-  async function saveTo(collection: Pick<CollectionSummary, 'id' | 'name'>) {
-    setSavingTo(collection.id);
-    try {
-      await saveItem.mutateAsync({ collectionId: collection.id, sourceId: result.sourceId });
-      setOpen(false);
-      toast.success(`Saved to ${collection.name}`);
-    } catch (error) {
-      if (error instanceof ApiError && error.code === 'ITEM_ALREADY_SAVED') {
-        toast(`Already saved in ${collection.name}`);
-      } else if (error instanceof ApiError && error.code === 'COLLECTION_NOT_FOUND') {
-        toast.error('That collection no longer exists.');
-      } else {
-        toast.error(error instanceof Error ? error.message : 'Could not save the image.');
-      }
-      void collections.refetch();
-    } finally {
-      setSavingTo(null);
-    }
+  // Optimistic: the picker closes, the button reads "Saved", and counts update at once;
+  // if the server refuses, everything rolls back with an explanation.
+  function saveTo(collection: Pick<CollectionSummary, 'id' | 'name'>) {
+    setOpen(false);
+    setSavedTo(collection.name);
+    toast.success(`Saved to ${collection.name}`);
+    saveItem.mutate(
+      { collectionId: collection.id, sourceId: result.sourceId },
+      {
+        onError: (error) => {
+          setSavedTo(null);
+          if (error instanceof ApiError && error.code === 'ITEM_ALREADY_SAVED') {
+            toast(`Already saved in ${collection.name}`);
+          } else if (error instanceof ApiError && error.code === 'COLLECTION_NOT_FOUND') {
+            toast.error('That collection no longer exists.');
+          } else {
+            toast.error(
+              `Couldn't save to ${collection.name}. ${error instanceof Error ? error.message : ''}`,
+            );
+          }
+        },
+      },
+    );
   }
 
   async function createAndSave(name: string) {
@@ -59,7 +66,7 @@ export function SaveToCollectionPopover({
     setCreating(true);
     try {
       const created = await createCollection.mutateAsync({ name, description: '' });
-      await saveTo(created);
+      saveTo(created);
     } catch (error) {
       const message =
         error instanceof ApiError
@@ -90,13 +97,24 @@ export function SaveToCollectionPopover({
           variant={appearance === 'pin' ? 'primary' : 'secondary'}
           className={
             appearance === 'pin'
-              ? 'min-h-10 rounded-full bg-accent2 px-4 text-[15px] text-white hover:bg-accent2-deep'
+              ? cn(
+                  'min-h-10 rounded-full px-4 text-[15px] text-white',
+                  savedTo ? 'bg-ink hover:bg-ink/85' : 'bg-accent2 hover:bg-accent2-deep',
+                )
               : undefined
           }
-          aria-label={`Save “${result.title}” to a collection`}
+          aria-label={
+            savedTo
+              ? `Saved to ${savedTo}. Save “${result.title}” to another collection`
+              : `Save “${result.title}” to a collection`
+          }
         >
-          <BookmarkSimple size={16} />
-          Save
+          {savedTo ? (
+            <Check size={16} weight="bold" aria-hidden="true" />
+          ) : (
+            <BookmarkSimple size={16} aria-hidden="true" />
+          )}
+          {savedTo ? 'Saved' : 'Save'}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="grid gap-3">
@@ -134,7 +152,6 @@ export function SaveToCollectionPopover({
               <CollectionPickerRow
                 key={collection.id}
                 collection={collection}
-                isSaving={savingTo === collection.id}
                 disabled={busy}
                 onSave={() => void saveTo(collection)}
               />
