@@ -19,8 +19,10 @@ type TopicChipsProps = {
 
 const chip = (active: boolean) =>
   cn(
-    'inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-full px-4 text-[15px] font-semibold whitespace-nowrap transition-colors',
-    active ? 'bg-ink text-paper' : 'bg-surface text-ink hover:bg-neutral-200',
+    'inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-full border px-4 text-[14px] font-semibold whitespace-nowrap transition-[color,background-color,border-color,box-shadow] duration-200',
+    active
+      ? 'border-ink bg-ink text-paper shadow-[0_6px_16px_-8px_rgba(32,30,29,0.7)]'
+      : 'border-divider bg-white/80 text-ink hover:border-ink/25 hover:bg-white hover:shadow-soft',
   );
 
 export function TopicChips({

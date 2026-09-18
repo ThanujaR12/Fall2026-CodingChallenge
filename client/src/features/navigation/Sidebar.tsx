@@ -43,8 +43,10 @@ export function Sidebar() {
         onFocus={() => setFocused(true)}
         onBlur={handleBlur}
         className={cn(
-          'fixed inset-y-0 left-0 z-40 hidden w-[76px] flex-col items-center border-r border-divider bg-paper py-4 transition-[translate,box-shadow] duration-300 ease-out motion-reduce:transition-none md:flex',
-          open ? 'translate-x-0 shadow-[6px_0_28px_rgba(32,30,29,0.10)]' : '-translate-x-full',
+          'fixed inset-y-0 left-0 z-40 hidden w-[76px] flex-col items-center glass border-r border-divider py-4 transition-[translate,box-shadow] duration-300 ease-out motion-reduce:transition-none md:flex',
+          open
+            ? 'translate-x-0 shadow-[10px_0_40px_-12px_rgba(32,30,29,0.22)]'
+            : '-translate-x-full',
         )}
       >
         <Link
@@ -66,14 +68,16 @@ export function Sidebar() {
                   aria-label={unread > 0 ? `${label}, ${unread} unread` : label}
                   onClick={() => setPanelOpen(!panelOpen)}
                   className={cn(
-                    'group relative inline-flex size-12 cursor-pointer items-center justify-center rounded-xl transition-colors',
-                    panelOpen ? 'bg-ink text-paper' : 'text-ink/75 hover:bg-surface hover:text-ink',
+                    'group relative inline-flex size-12 cursor-pointer items-center justify-center rounded-2xl transition-colors',
+                    panelOpen
+                      ? 'bg-ink text-paper shadow-[0_8px_18px_-8px_rgba(32,30,29,0.7)]'
+                      : 'text-ink/75 hover:bg-surface hover:text-ink',
                   )}
                 >
                   <NavIcon icon={icon} active={panelOpen} badge={unread} />
                   <span
                     aria-hidden="true"
-                    className="pointer-events-none absolute left-full ml-3 rounded-md bg-ink px-2.5 py-1 text-[13px] font-semibold whitespace-nowrap text-paper opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+                    className="pointer-events-none absolute left-full ml-3 rounded-lg bg-ink px-2.5 py-1 shadow-soft text-[13px] font-semibold whitespace-nowrap text-paper opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
                   >
                     {label}
                   </span>
@@ -85,8 +89,10 @@ export function Sidebar() {
                   aria-label={label}
                   className={({ isActive }) =>
                     cn(
-                      'group relative inline-flex size-12 items-center justify-center rounded-xl transition-colors',
-                      isActive && !colorful && 'bg-ink text-paper',
+                      'group relative inline-flex size-12 items-center justify-center rounded-2xl transition-colors',
+                      isActive &&
+                        !colorful &&
+                        'bg-ink text-paper shadow-[0_8px_18px_-8px_rgba(32,30,29,0.7)]',
                       isActive && colorful && 'bg-surface',
                       !isActive && 'text-ink/75 hover:bg-surface hover:text-ink',
                     )
@@ -98,7 +104,7 @@ export function Sidebar() {
                       {/* Label bubble on hover or keyboard focus; the link's aria-label names it. */}
                       <span
                         aria-hidden="true"
-                        className="pointer-events-none absolute left-full ml-3 rounded-md bg-ink px-2.5 py-1 text-[13px] font-semibold whitespace-nowrap text-paper opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+                        className="pointer-events-none absolute left-full ml-3 rounded-lg bg-ink px-2.5 py-1 shadow-soft text-[13px] font-semibold whitespace-nowrap text-paper opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
                       >
                         {label}
                       </span>

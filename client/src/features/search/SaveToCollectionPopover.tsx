@@ -124,7 +124,7 @@ export function SaveToCollectionPopover({
             type="button"
             onClick={() => handleOpenChange(false)}
             aria-label="Close"
-            className="-mr-2 inline-flex size-9 cursor-pointer items-center justify-center rounded-[2px] text-ink/70 hover:bg-accent-tint"
+            className="-mr-2 inline-flex size-9 cursor-pointer items-center justify-center rounded-full text-ink/70 hover:bg-accent-tint"
           >
             <X size={16} />
           </button>

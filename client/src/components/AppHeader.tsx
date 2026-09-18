@@ -18,7 +18,9 @@ export function AppHeader() {
   const signedIn = status === 'signedIn' && Boolean(user);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-divider bg-paper/95 backdrop-blur">
+    <header className="glass sticky top-0 z-30 border-b border-divider/70">
+      {/* A hairline in the logo's four colours. */}
+      <div aria-hidden="true" className="brand-gradient h-[3px] w-full" />
       <PageContainer className="flex h-16 max-w-[1800px] items-center justify-between gap-3 md:gap-6">
         <Link
           to={user ? '/' : '/login'}

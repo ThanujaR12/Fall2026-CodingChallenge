@@ -34,7 +34,7 @@ function SheetContent({
       >
         {children}
         <SheetPrimitive.Close
-          className="absolute top-2 right-2 inline-flex size-11 cursor-pointer items-center justify-center rounded-[2px] text-ink hover:bg-accent-tint"
+          className="absolute top-2 right-2 inline-flex size-11 cursor-pointer items-center justify-center rounded-full text-ink hover:bg-surface"
           aria-label="Close"
         >
           <X size={18} />

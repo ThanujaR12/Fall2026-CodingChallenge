@@ -31,7 +31,7 @@ export function PinCard({ result, imageHeight, renderSaveAction, showReason }: P
   return (
     <article className="group">
       <div
-        className="stripe-placeholder relative overflow-hidden rounded-2xl"
+        className="stripe-placeholder relative overflow-hidden rounded-[20px] shadow-[0_1px_2px_rgba(32,30,29,0.06)] transition-[box-shadow,translate] duration-300 group-hover:-translate-y-1 group-hover:shadow-lift motion-reduce:transition-none"
         style={{ height: imageHeight }}
       >
         {failed ? (
@@ -59,7 +59,7 @@ export function PinCard({ result, imageHeight, renderSaveAction, showReason }: P
         {/* Darkens the photo on hover so the white controls stay readable. */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-ink/40 opacity-0 transition-opacity group-hover:opacity-100 group-has-[[data-state=open]]:opacity-100"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/65 via-ink/15 to-ink/25 opacity-0 transition-opacity group-hover:opacity-100 group-has-[[data-state=open]]:opacity-100"
         />
         <div className={`absolute top-2.5 right-2.5 ${alwaysOnTouch}`}>
           {renderSaveAction(result)}
@@ -86,9 +86,9 @@ export function PinCard({ result, imageHeight, renderSaveAction, showReason }: P
           className="truncate"
         />
         {showReason && result.reason && (
-          <p className="mt-0.5 flex items-center gap-1 truncate text-[12px] font-semibold text-accent-deep">
-            <Sparkle size={12} weight="fill" aria-hidden="true" />
-            {result.reason}
+          <p className="mt-1 flex max-w-full w-fit items-center gap-1 rounded-full bg-accent-tint px-2 py-0.5 text-[11.5px] font-semibold text-accent-deep">
+            <Sparkle size={12} weight="fill" aria-hidden="true" className="shrink-0" />
+            <span className="truncate">{result.reason}</span>
           </p>
         )}
       </div>

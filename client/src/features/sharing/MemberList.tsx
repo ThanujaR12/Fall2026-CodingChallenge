@@ -63,7 +63,7 @@ export function MemberList({ collectionId, owner, members, myUserId, canManage }
                     { onError: (error) => toast.error(error.message) },
                   )
                 }
-                className="min-h-11 cursor-pointer rounded-[2px] border border-divider bg-surface px-2 text-[14px] md:min-h-9"
+                className="min-h-11 cursor-pointer rounded-xl border border-divider bg-white/85 px-2 text-[14px] md:min-h-9"
               >
                 <option value="editor">Editor</option>
                 <option value="viewer">Viewer</option>
@@ -78,7 +78,7 @@ export function MemberList({ collectionId, owner, members, myUserId, canManage }
                     onError: (error) => toast.error(error.message),
                   })
                 }
-                className="inline-flex size-11 cursor-pointer items-center justify-center rounded-[2px] text-accent2-deep hover:bg-accent2-tint disabled:opacity-55 md:size-9"
+                className="inline-flex size-11 cursor-pointer items-center justify-center rounded-full text-accent2-deep hover:bg-accent2-tint disabled:opacity-55 md:size-9"
               >
                 <X size={16} />
               </button>

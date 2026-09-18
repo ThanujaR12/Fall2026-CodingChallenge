@@ -11,7 +11,7 @@ function Toaster(props: ToasterProps) {
           color: 'var(--color-paper)',
           border: 'none',
           borderRadius: '2px',
-          fontFamily: 'var(--font-serif)',
+          fontFamily: 'var(--font-sans)',
           fontSize: '14px',
         },
       }}

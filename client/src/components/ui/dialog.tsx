@@ -44,14 +44,14 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          'fixed top-1/2 left-1/2 z-50 grid max-h-[calc(100dvh-32px)] w-[calc(100%-32px)] max-w-[520px] -translate-x-1/2 -translate-y-1/2 gap-5 overflow-y-auto rounded-[2px] bg-paper p-5 text-ink shadow-float outline-none data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0 md:p-[30px]',
+          'fixed top-1/2 left-1/2 z-50 grid max-h-[calc(100dvh-32px)] w-[calc(100%-32px)] max-w-[520px] -translate-x-1/2 -translate-y-1/2 gap-5 overflow-y-auto rounded-3xl bg-paper p-5 text-ink shadow-float outline-none data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0 md:p-[30px]',
           className,
         )}
         {...props}
       >
         {children}
         <DialogPrimitive.Close
-          className="absolute top-3 right-3 inline-flex size-11 cursor-pointer items-center justify-center rounded-[2px] text-ink hover:bg-accent-tint md:size-9"
+          className="absolute top-3 right-3 inline-flex size-11 cursor-pointer items-center justify-center rounded-full text-ink hover:bg-surface md:size-9"
           aria-label="Close"
         >
           <X size={18} />

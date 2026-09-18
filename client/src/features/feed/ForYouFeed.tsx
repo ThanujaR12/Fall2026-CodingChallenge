@@ -35,11 +35,19 @@ export function ForYouFeed() {
 
   return (
     <section aria-labelledby="for-you-heading">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-divider bg-surface/50 p-4">
+      <div className="brand-card mb-6 flex flex-wrap items-center justify-between gap-3 rounded-3xl p-5">
         <div className="min-w-0">
-          <h2 id="for-you-heading" className="flex items-center gap-2 text-[18px] font-semibold">
-            <Sparkle size={18} weight="fill" className="text-accent2" aria-hidden="true" />
-            {first?.personalized ? 'Picked for you' : 'Fresh picks for you'}
+          <h2 id="for-you-heading" className="flex items-center gap-2.5 text-[20px]">
+            <span
+              aria-hidden="true"
+              className="brand-gradient inline-flex size-8 items-center justify-center rounded-full text-white shadow-soft"
+            >
+              <Sparkle size={16} weight="fill" />
+            </span>
+            <span>
+              {first?.personalized ? 'Picked ' : 'Fresh picks '}
+              <span className="text-brand">for you</span>
+            </span>
           </h2>
           {first?.personalized ? (
             <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[13px] text-ink/75">
@@ -48,7 +56,7 @@ export function ForYouFeed() {
                 <Link
                   key={interest}
                   to={`/search?${new URLSearchParams({ q: interest })}`}
-                  className="rounded-full bg-paper px-2.5 py-1 font-semibold text-ink hover:bg-accent-tint hover:text-accent-deep"
+                  className="rounded-full border border-divider bg-white px-3 py-1 font-semibold text-ink transition-colors hover:border-accent hover:bg-accent-tint hover:text-accent-deep"
                 >
                   {interest}
                 </Link>

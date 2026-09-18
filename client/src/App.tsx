@@ -30,7 +30,7 @@ function Layout() {
       <div className="min-h-dvh bg-paper">
         {signedIn && <Sidebar />}
         <AppHeader />
-        <main className={signedIn ? 'pb-24 md:pb-16' : 'pb-16'}>
+        <main className={`animate-rise ${signedIn ? 'pb-24 md:pb-16' : 'pb-16'}`}>
           <Outlet />
         </main>
         {signedIn && <MobileNav />}

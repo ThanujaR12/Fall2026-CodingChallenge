@@ -55,7 +55,7 @@ export function InviteForm({ collectionId }: { collectionId: string }) {
             id="invite-role"
             value={role}
             onChange={(event) => setRole(event.target.value as MemberRole)}
-            className="min-h-11 flex-1 cursor-pointer rounded-[2px] border border-divider bg-surface px-2 text-[14px] md:min-h-9"
+            className="min-h-11 flex-1 cursor-pointer rounded-xl border border-divider bg-white/85 px-2 text-[14px] md:min-h-9"
           >
             <option value="editor">Editor</option>
             <option value="viewer">Viewer</option>
