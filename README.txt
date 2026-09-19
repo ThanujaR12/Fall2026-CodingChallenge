@@ -9,8 +9,8 @@ Vanderbilt email:  thanuja.rameshbaabu@vanderbilt.edu
 
 LIVE APP:   https://paletteboard.vercel.app
 API:        https://palatteboard.onrender.com/api/health   (shows {"status":"ok"})
-CODE:       https://github.com/ThanujaR12/PixBoard
-            (the app was renamed from PixBoard to PaletteBoard during Feature 3)
+CODE:       https://github.com/ThanujaR12/PaletteBoard
+            (renamed from "PixBoard" during Feature 3; the old address redirects here)
 
 
 --------------------------------------------------------------------------------
